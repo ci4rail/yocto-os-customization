@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Report the effective OS customization lifecycle state to Mender inventory."""
+
+import os
+import sys
+from pathlib import Path
+
+
+def _prepend_pythonpath() -> None:
+    script_path = Path(__file__).resolve()
+    candidate_paths = [
+        script_path.parent.parent.parent / "lib" / "os-customization" / "python",
+        Path("/usr/lib/os-customization/python"),
+        Path("/data/os-customization-tools/lib/os-customization/python"),
+    ]
+    for candidate in candidate_paths:
+        candidate_str = str(candidate)
+        if candidate.is_dir() and candidate_str not in sys.path:
+            sys.path.insert(0, candidate_str)
+            return
+
+
+_prepend_pythonpath()
+
+from os_customization.manager import CustomizationError, CustomizationManager
+
+
+def _value(value: object) -> str:
+    if value is None:
+        return "none"
+    return str(value).replace("\n", " ").replace("\r", " ")
+
+
+def main() -> int:
+    root = Path(os.environ.get("OS_CUSTOMIZATION_ROOT", "/data/os-customization"))
+    try:
+        status = CustomizationManager(root=root).read_status()
+    except (CustomizationError, OSError, ValueError) as exc:
+        print(f"os_customization_inventory_error={_value(exc)}")
+        return 0
+
+    for name in (
+        "active_version",
+        "last_good_version",
+        "candidate_version",
+        "candidate_state",
+        "active_slot",
+        "last_good_slot",
+        "candidate_slot",
+        "factory_version",
+    ):
+        print(f"os_customization_{name}={_value(status.get(name))}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

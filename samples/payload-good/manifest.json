@@ -1,0 +1,11 @@
+{
+    "format_version": 1,
+    "version": "sample-good-1.0.0",
+    "compatible_core_os": null,
+    "health_checks": [
+        {
+            "type": "path_exists",
+            "path": "/etc"
+        }
+    ]
+}

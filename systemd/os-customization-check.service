@@ -1,0 +1,16 @@
+[Unit]
+Description=Validate OS customization candidate
+DefaultDependencies=yes
+After=multi-user.target network-online.target
+Wants=network-online.target
+ConditionPathExists=/data/os-customization/status.json
+
+[Service]
+Type=oneshot
+Environment=PYTHONPATH=/usr/lib/os-customization/python
+Environment=OS_CUSTOMIZATION_ROOT=/data/os-customization
+Environment=OS_CUSTOMIZATION_BOOT_SELECTION_PATH=/run/os-customization/boot-selection.json
+ExecStart=/usr/libexec/os-customization-check
+
+[Install]
+WantedBy=multi-user.target

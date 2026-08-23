@@ -1,0 +1,195 @@
+#!/usr/bin/env python3
+"""Mender Update Module for an OS customization-set payload.
+
+The module accepts exactly one tar archive in Mender's File API ``files``
+directory.  It extracts that archive into a private staging directory and uses
+the transport-independent customization manager to install it as a candidate.
+"""
+
+import os
+import stat
+import sys
+import tarfile
+import tempfile
+import time
+from pathlib import Path, PurePosixPath
+
+
+def _prepend_pythonpath() -> None:
+    script_path = Path(__file__).resolve()
+    candidate_paths = [
+        script_path.parent.parent.parent / "lib" / "os-customization" / "python",
+        Path("/usr/lib/os-customization/python"),
+        Path("/data/os-customization-tools/lib/os-customization/python"),
+    ]
+    for candidate in candidate_paths:
+        candidate_str = str(candidate)
+        if candidate.is_dir() and candidate_str not in sys.path:
+            sys.path.insert(0, candidate_str)
+            return
+
+
+_prepend_pythonpath()
+
+from os_customization.manager import CustomizationError, CustomizationManager
+
+
+def _root() -> Path:
+    return Path(os.environ.get("OS_CUSTOMIZATION_ROOT", "/data/os-customization"))
+
+
+def _issue_path() -> Path:
+    return Path(os.environ.get("OS_CUSTOMIZATION_ISSUE_PATH", "/etc/issue"))
+
+
+def _member_path(member: tarfile.TarInfo) -> PurePosixPath:
+    path = PurePosixPath(member.name)
+    if path.is_absolute() or not path.parts or any(part in {"", ".", ".."} for part in path.parts):
+        raise CustomizationError(f"unsafe archive member path: {member.name!r}")
+    return path
+
+
+def _payload_archive(context: Path) -> Path:
+    files_path = context / "files"
+    try:
+        entries = list(files_path.iterdir())
+    except OSError as exc:
+        raise CustomizationError(f"cannot read Mender payload directory: {files_path}") from exc
+    if len(entries) != 1 or not entries[0].is_file() or entries[0].is_symlink():
+        raise CustomizationError("Mender payload must contain exactly one regular customization archive")
+    return entries[0]
+
+
+def _extract_archive(archive: Path, destination: Path) -> None:
+    directories: list[tuple[tarfile.TarInfo, PurePosixPath]] = []
+    regular_files: list[tuple[tarfile.TarInfo, PurePosixPath]] = []
+    symlinks: list[tuple[tarfile.TarInfo, PurePosixPath]] = []
+    seen: set[PurePosixPath] = set()
+
+    try:
+        with tarfile.open(archive, "r:*") as bundle:
+            for member in bundle.getmembers():
+                # GNU tar emits this directory entry for archives made with
+                # ``tar -C payload -cf payload.tar .``.  It is not a payload
+                # path and is safe to ignore.
+                if member.name in {".", "./"} and member.isdir():
+                    continue
+                path = _member_path(member)
+                if path in seen:
+                    raise CustomizationError(f"duplicate archive member: {member.name!r}")
+                seen.add(path)
+                if member.isdir():
+                    directories.append((member, path))
+                elif member.isreg():
+                    regular_files.append((member, path))
+                elif member.issym():
+                    if not member.linkname:
+                        raise CustomizationError(f"empty symlink target: {member.name!r}")
+                    symlinks.append((member, path))
+                else:
+                    raise CustomizationError(f"unsupported archive member type: {member.name!r}")
+
+            for member, path in sorted(directories, key=lambda entry: len(entry[1].parts)):
+                target = destination.joinpath(*path.parts)
+                target.mkdir(parents=True, exist_ok=True)
+                os.chmod(target, stat.S_IMODE(member.mode))
+
+            for member, path in regular_files:
+                target = destination.joinpath(*path.parts)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source = bundle.extractfile(member)
+                if source is None:
+                    raise CustomizationError(f"cannot read archive member: {member.name!r}")
+                with source, target.open("xb") as output:
+                    while chunk := source.read(1024 * 1024):
+                        output.write(chunk)
+                os.chmod(target, stat.S_IMODE(member.mode))
+
+            # Symlinks are created last, so no archive member can traverse one
+            # while the archive is unpacked.  The manager validates targets
+            # relative to /etc before installation.
+            for member, path in symlinks:
+                target = destination.joinpath(*path.parts)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                os.symlink(member.linkname, target)
+    except (tarfile.TarError, OSError) as exc:
+        raise CustomizationError(f"cannot safely extract customization archive: {exc}") from exc
+
+
+def _install(context: Path) -> None:
+    manager = CustomizationManager(root=_root(), issue_path=_issue_path())
+    manager.ensure_layout()
+    with tempfile.TemporaryDirectory(prefix="mender-", dir=manager.staging_root) as workspace:
+        payload = Path(workspace) / "payload"
+        payload.mkdir()
+        _extract_archive(_payload_archive(context), payload)
+        result = manager.install_payload(payload, current_core_os=os.environ.get("OS_CUSTOMIZATION_CORE_OS_VERSION"))
+    print(result)
+
+
+def _rollback() -> None:
+    manager = CustomizationManager(root=_root(), issue_path=_issue_path())
+    status = manager.read_status()
+    if not status.get("candidate_slot"):
+        return
+    manager.rollback()
+
+
+def _verify_after_reboot() -> int:
+    manager = CustomizationManager(root=_root(), issue_path=_issue_path())
+    timeout = int(os.environ.get("OS_CUSTOMIZATION_HEALTH_TIMEOUT", "300"))
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        status = manager.read_status()
+        if status.get("candidate_slot"):
+            time.sleep(2)
+            continue
+        if status.get("candidate_state") == "rolled-back":
+            print("customization candidate rolled back", file=sys.stderr)
+            return 1
+        return 0
+    print("timed out waiting for customization candidate health result", file=sys.stderr)
+    return 1
+
+
+def _confirm_committed() -> int:
+    """Allow Mender to commit only after manager health processing succeeded."""
+    status = CustomizationManager(root=_root(), issue_path=_issue_path()).read_status()
+    if status.get("candidate_slot"):
+        print("customization candidate is still pending", file=sys.stderr)
+        return 1
+    if status.get("candidate_state") in {"rolled-back", "exhausted", "incompatible-core-os"}:
+        print(f"customization was not committed: {status.get('candidate_state')}", file=sys.stderr)
+        return 1
+    if not status.get("active_slot") or not status.get("last_good_slot"):
+        print("no committed USER customization is selected", file=sys.stderr)
+        return 1
+    return 0
+
+
+def main() -> int:
+    if len(sys.argv) != 3:
+        print("usage: os-customization <action> <artifact-context>", file=sys.stderr)
+        return 2
+    action, context = sys.argv[1], Path(sys.argv[2])
+    try:
+        if action == "NeedsArtifactReboot":
+            print("Automatic")
+        elif action == "SupportsRollback":
+            print("Yes")
+        elif action == "ArtifactInstall":
+            _install(context)
+        elif action == "ArtifactRollback":
+            _rollback()
+        elif action == "ArtifactVerifyReboot":
+            return _verify_after_reboot()
+        elif action == "ArtifactCommit":
+            return _confirm_committed()
+        return 0
+    except (CustomizationError, OSError, ValueError) as exc:
+        print(f"os-customization Update Module: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,13 @@
+[Unit]
+Description=Run OS customization factory reset once
+ConditionPathExists=/run/os-customization-factory-reset
+
+[Service]
+Type=oneshot
+Environment=PYTHONPATH=/usr/lib/os-customization/python
+ExecStart=/usr/bin/os-customization-set factory-reset --wipe-state
+ExecStartPost=/bin/rm -f /run/os-customization-factory-reset
+ExecStartPost=/bin/systemctl reboot
+
+[Install]
+WantedBy=multi-user.target

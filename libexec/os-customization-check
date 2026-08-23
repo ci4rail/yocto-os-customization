@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+def _prepend_pythonpath() -> None:
+    env_pythonpath = os.environ.get("PYTHONPATH", "")
+    for entry in reversed([item for item in env_pythonpath.split(":") if item]):
+        if entry not in sys.path:
+            sys.path.insert(0, entry)
+
+    script_path = Path(__file__).resolve()
+    candidate_paths = [
+        script_path.parent.parent / "lib" / "os-customization" / "python",
+        Path("/usr/lib/os-customization/python"),
+        Path("/data/os-customization-tools/lib/os-customization/python"),
+    ]
+    for candidate in candidate_paths:
+        candidate_str = str(candidate)
+        if candidate.is_dir() and candidate_str not in sys.path:
+            sys.path.insert(0, candidate_str)
+            break
+
+
+_prepend_pythonpath()
+
+from os_customization.manager import CustomizationError, CustomizationManager
+
+
+def reboot_if_requested() -> None:
+    reboot_on_change = os.environ.get("OS_CUSTOMIZATION_REBOOT", "1")
+    if reboot_on_change == "0":
+        return
+    subprocess.run(["systemctl", "reboot"], check=True)
+
+
+def main() -> int:
+    root = Path(os.environ.get("OS_CUSTOMIZATION_ROOT", "/data/os-customization"))
+    max_attempts = int(os.environ.get("OS_CUSTOMIZATION_MAX_ATTEMPTS", "3"))
+    boot_selection_path = Path(
+        os.environ.get("OS_CUSTOMIZATION_BOOT_SELECTION_PATH", "/run/os-customization/boot-selection.json")
+    )
+    manager = CustomizationManager(root=root, max_attempts=max_attempts)
+
+    try:
+        status = manager.read_status()
+        candidate_slot = status.get("candidate_slot")
+        if not candidate_slot:
+            return 0
+
+        matched, reason = manager.candidate_activation_matches(boot_selection_path)
+        if not matched:
+            print(f"os-customization-check: {reason}", file=sys.stderr)
+            manager.rollback()
+            reboot_if_requested()
+            return 1
+
+        result = manager.run_health_checks(slot_name=candidate_slot)
+        if result["passed"]:
+            manager.commit()
+            return 0
+
+        manager.rollback()
+        reboot_if_requested()
+        return 1
+    except (CustomizationError, subprocess.CalledProcessError) as exc:
+        print(f"os-customization-check: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

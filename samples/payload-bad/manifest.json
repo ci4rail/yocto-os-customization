@@ -1,0 +1,13 @@
+{
+    "format_version": 1,
+    "version": "sample-bad-1.0.0",
+    "compatible_core_os": null,
+    "health_checks": [
+        {
+            "type": "command",
+            "command": [
+                "false"
+            ]
+        }
+    ]
+}
