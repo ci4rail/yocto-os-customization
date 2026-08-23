@@ -104,7 +104,10 @@ open_rootfs_rw() {
     if [ "$rootfs_rw_opened" -eq 1 ]; then
         return 0
     fi
-    $SSH "$remote" "mount -o remount,rw /"
+    if ! $SSH "$remote" "mount -o remount,rw /"; then
+        echo "failed to remount the target root filesystem read-write" >&2
+        return 1
+    fi
     rootfs_rw_opened=1
 }
 
@@ -112,7 +115,13 @@ close_rootfs_ro() {
     if [ "$rootfs_rw_opened" -eq 0 ]; then
         return 0
     fi
-    $SSH "$remote" "mount -o remount,ro /"
+    # An ext4 read-only remount can transiently return EBUSY while services
+    # finish writes caused by the deployment.  Flush first and retry instead
+    # of leaving the target root filesystem writable without an explanation.
+    if ! $SSH "$remote" 'sync; attempt=1; while [ "$attempt" -le 3 ]; do if mount -o remount,ro /; then exit 0; fi; attempt=$((attempt + 1)); sleep 1; done; echo "failed to restore / as read-only" >&2; exit 1'; then
+        echo "target root filesystem remains read-write; inspect its mount state before rebooting" >&2
+        return 1
+    fi
     rootfs_rw_opened=0
 }
 

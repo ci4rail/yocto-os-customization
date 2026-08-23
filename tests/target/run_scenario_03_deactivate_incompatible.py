@@ -18,6 +18,7 @@ def main() -> int:
     args = parser.parse_args()
     context: TargetContext | None = None
     original_issue: str | None = None
+    exit_code = 1
     try:
         context = TargetContext("03", "deactivate-incompatible", "Deactivate a last-known-good customization when Core OS compatibility changes", log_dir=Path(args.log_dir))
         context.require_ready()
@@ -67,13 +68,12 @@ def main() -> int:
         )
 
         context.log("SCENARIO 03 PASS")
-        return finalize(context, 0)
+        exit_code = 0
     except ScenarioError as exc:
         if context is not None:
             context.log(f"SCENARIO 03 FAIL: {exc}")
         else:
             print(f"SCENARIO 03 FAIL: {exc}")
-        return finalize(context, 1)
     finally:
         if context is not None and original_issue is not None:
             try:
@@ -81,6 +81,7 @@ def main() -> int:
                 context.reset_to_factory()
             except ScenarioError as cleanup_exc:
                 context.log(f"SCENARIO 03 CLEANUP FAIL: {cleanup_exc}")
+    return finalize(context, exit_code)
 
 
 if __name__ == "__main__":

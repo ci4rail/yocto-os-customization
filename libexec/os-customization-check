@@ -46,26 +46,27 @@ def main() -> int:
     manager = CustomizationManager(root=root, max_attempts=max_attempts)
 
     try:
-        status = manager.read_status()
-        candidate_slot = status.get("candidate_slot")
-        if not candidate_slot:
-            return 0
+        with manager.operation_lock():
+            status = manager.read_status()
+            candidate_slot = status.get("candidate_slot")
+            if not candidate_slot:
+                return 0
 
-        matched, reason = manager.candidate_activation_matches(boot_selection_path)
-        if not matched:
-            print(f"os-customization-check: {reason}", file=sys.stderr)
+            matched, reason = manager.candidate_activation_matches(boot_selection_path)
+            if not matched:
+                print(f"os-customization-check: {reason}", file=sys.stderr)
+                manager.rollback()
+                reboot_if_requested()
+                return 1
+
+            result = manager.run_health_checks(slot_name=candidate_slot)
+            if result["passed"]:
+                manager.commit()
+                return 0
+
             manager.rollback()
             reboot_if_requested()
             return 1
-
-        result = manager.run_health_checks(slot_name=candidate_slot)
-        if result["passed"]:
-            manager.commit()
-            return 0
-
-        manager.rollback()
-        reboot_if_requested()
-        return 1
     except (CustomizationError, subprocess.CalledProcessError) as exc:
         print(f"os-customization-check: {exc}", file=sys.stderr)
         return 1

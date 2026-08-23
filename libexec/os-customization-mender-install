@@ -42,7 +42,8 @@ def main() -> int:
 
     manager = CustomizationManager(root=Path(args.root), issue_path=Path(args.issue_path))
     try:
-        result = manager.install_payload(Path(args.directory), current_core_os=args.core_os_version)
+        with manager.operation_lock():
+            result = manager.install_payload(Path(args.directory), current_core_os=args.core_os_version)
         print(result)
         if not args.no_reboot:
             subprocess.run(["systemctl", "reboot"], check=True)

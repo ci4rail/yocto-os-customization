@@ -67,7 +67,8 @@ mount_overlay_etc() {
         log "failed to create boot state dir $BOOT_STATE_DIR"
         return 1
     }
-    boot_env=$(PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" boot-prepare-shell --boot-selection-path "$BOOT_SELECTION_PATH" 2>/dev/null) || {
+    boot_id=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || true)
+    boot_env=$(PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" boot-prepare-shell --boot-id "$boot_id" --boot-selection-path "$BOOT_SELECTION_PATH" 2>/dev/null) || {
         log "boot-prepare-shell failed"
         return 1
     }

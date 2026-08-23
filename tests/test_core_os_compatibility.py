@@ -243,5 +243,82 @@ class FactoryInstallTests(unittest.TestCase):
             mknod.assert_called_once_with(expected_marker, stat.S_IFCHR | 0o000, os.makedev(0, 0))
 
 
+class PowerCutRecoveryTests(unittest.TestCase):
+    def test_interrupted_factory_replacement_restores_previous_factory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "state"
+            manager = CustomizationManager(root=root)
+            manager.ensure_layout()
+            (manager.factory_path / "etc" / "marker").write_text("old", encoding="utf-8")
+            backup = manager.staging_root / "factory.backup"
+            os.replace(manager.factory_path, backup)
+            (manager.factory_path / "etc").mkdir(parents=True)
+            (manager.factory_path / "etc" / "marker").write_text("new", encoding="utf-8")
+            manager._write_transaction(
+                {"kind": "factory-install", "temporary": "factory.tmp", "backup": "factory.backup"}
+            )
+
+            recovered = CustomizationManager(root=root)
+            recovered.ensure_layout()
+
+            self.assertEqual((recovered.factory_path / "etc" / "marker").read_text(encoding="utf-8"), "old")
+            self.assertFalse(recovered.transaction_path.exists())
+
+    def test_interrupted_precommit_state_wipe_is_rolled_back(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "state"
+            manager = CustomizationManager(root=root)
+            manager.ensure_layout()
+            (manager.state_etc_path / "marker").write_text("old", encoding="utf-8")
+            backup = manager.staging_root / "state.reset.backup"
+            os.replace(root / "state", backup)
+            manager.state_etc_path.mkdir(parents=True)
+            manager._write_transaction(
+                {"kind": "factory-reset", "phase": "prepared", "backup": "state.reset.backup"}
+            )
+
+            recovered = CustomizationManager(root=root)
+            recovered.ensure_layout()
+
+            self.assertEqual((recovered.state_etc_path / "marker").read_text(encoding="utf-8"), "old")
+            self.assertFalse(recovered.transaction_path.exists())
+
+    def test_interrupted_committed_reset_is_completed(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "state"
+            manager = CustomizationManager(root=root)
+            manager.ensure_layout()
+            (manager.state_etc_path / "marker").write_text("old", encoding="utf-8")
+            status = manager.read_status()
+            status.update({"active_slot": "A", "last_good_slot": "A"})
+            manager.write_status(status)
+            backup = manager.staging_root / "state.reset.backup"
+            os.replace(root / "state", backup)
+            manager.state_etc_path.mkdir(parents=True)
+            manager._write_transaction(
+                {"kind": "factory-reset", "phase": "commit-decided", "backup": "state.reset.backup"}
+            )
+
+            recovered = CustomizationManager(root=root)
+            recovered.ensure_layout()
+
+            self.assertFalse((recovered.state_etc_path / "marker").exists())
+            self.assertIsNone(recovered.read_status()["active_slot"])
+            self.assertFalse(recovered.transaction_path.exists())
+
+    def test_candidate_gets_exactly_maximum_number_of_boot_attempts(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = CustomizationManager(root=Path(temp_dir) / "state", max_attempts=3)
+            manager.ensure_layout()
+            status = manager.read_status()
+            status["candidate_slot"] = "A"
+            manager.write_status(status)
+
+            self.assertEqual(manager.boot_prepare()["selected_slot"], "A")
+            self.assertEqual(manager.boot_prepare()["selected_slot"], "A")
+            self.assertEqual(manager.boot_prepare()["selected_slot"], "A")
+            self.assertIsNone(manager.boot_prepare()["selected_slot"])
+
+
 if __name__ == "__main__":
     unittest.main()

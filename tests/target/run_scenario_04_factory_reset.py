@@ -22,6 +22,7 @@ def main() -> int:
     args = parser.parse_args()
     context: TargetContext | None = None
     factory_snapshot = None
+    exit_code = 1
     try:
         context = TargetContext("04", "factory-reset", "Restore factory configuration and wipe STATE content", log_dir=Path(args.log_dir))
         context.require_ready()
@@ -80,19 +81,19 @@ def main() -> int:
         )
 
         context.log("SCENARIO 04 PASS")
-        return finalize(context, 0)
+        exit_code = 0
     except ScenarioError as exc:
         if context is not None:
             context.log(f"SCENARIO 04 FAIL: {exc}")
         else:
             print(f"SCENARIO 04 FAIL: {exc}")
-        return finalize(context, 1)
     finally:
         if context is not None and factory_snapshot is not None:
             try:
                 context.restore_factory_payload(factory_snapshot)
             except ScenarioError as cleanup_exc:
                 context.log(f"SCENARIO 04 CLEANUP FAIL: {cleanup_exc}")
+    return finalize(context, exit_code)
 
 
 if __name__ == "__main__":

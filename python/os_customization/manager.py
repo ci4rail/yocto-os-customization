@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import fcntl
 import json
 import os
 import re
@@ -10,6 +11,7 @@ import stat
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -54,6 +56,7 @@ class CustomizationManager:
         self.root = Path(root)
         self.max_attempts = max_attempts
         self.issue_path = Path(issue_path)
+        self._recovering_transaction = False
 
     @property
     def status_path(self) -> Path:
@@ -62,6 +65,14 @@ class CustomizationManager:
     @property
     def staging_root(self) -> Path:
         return self.root / "staging"
+
+    @property
+    def transaction_path(self) -> Path:
+        return self.root / "transaction.json"
+
+    @property
+    def lock_path(self) -> Path:
+        return self.root / ".lifecycle.lock"
 
     @property
     def factory_path(self) -> Path:
@@ -83,6 +94,8 @@ class CustomizationManager:
     def ensure_layout(self) -> None:
         self.root.mkdir(parents=True, exist_ok=True)
         self.staging_root.mkdir(parents=True, exist_ok=True)
+        if not self._recovering_transaction:
+            self._recover_transaction()
         self.factory_path.mkdir(parents=True, exist_ok=True)
         (self.factory_path / "etc").mkdir(parents=True, exist_ok=True)
         self.state_etc_path.mkdir(parents=True, exist_ok=True)
@@ -101,6 +114,18 @@ class CustomizationManager:
                 )
         if not self.status_path.exists():
             self.write_status(self.default_status())
+
+    @contextmanager
+    def operation_lock(self):
+        """Serialize lifecycle state transitions across CLI and service callers."""
+        self.root.mkdir(parents=True, exist_ok=True)
+        fd = os.open(self.lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            yield
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            os.close(fd)
 
     def default_status(self) -> dict:
         factory_version = self._load_manifest_version(self.factory_path / MANIFEST_FILENAME)
@@ -192,13 +217,6 @@ class CustomizationManager:
                 selected = candidate
                 selection_reason = "candidate-compatible"
                 status["candidate_attempts"] = int(status.get("candidate_attempts", 0)) + 1
-                if status["candidate_attempts"] >= self.max_attempts:
-                    status["candidate_state"] = "exhausted"
-                    status["candidate_slot"] = None
-                    status["candidate_version"] = None
-                    status["candidate_attempts"] = 0
-                    selected = None
-                    selection_reason = "candidate-exhausted"
                 if boot_id:
                     status["boot_id_last_seen"] = boot_id
 
@@ -257,6 +275,95 @@ class CustomizationManager:
 
     def _factory_is_compatible(self) -> tuple[bool, str]:
         return self._manifest_is_compatible(self.factory_path / MANIFEST_FILENAME)
+
+    def _write_transaction(self, payload: dict) -> None:
+        self._write_json_atomic(self.transaction_path, payload)
+
+    def _clear_transaction(self) -> None:
+        try:
+            self.transaction_path.unlink()
+        except FileNotFoundError:
+            return
+        self._fsync_dir(self.transaction_path.parent)
+
+    def _remove_tree_and_sync(self, path: Path) -> None:
+        if path.exists() or path.is_symlink():
+            if path.is_dir() and not path.is_symlink():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+            self._fsync_dir(path.parent)
+
+    def _restore_backup(self, live: Path, backup: Path, discard: Path) -> None:
+        """Restore a pre-operation tree, preserving it across every rename boundary."""
+        if not backup.exists():
+            return
+        if live.exists():
+            self._remove_tree_and_sync(discard)
+            os.replace(live, discard)
+            self._fsync_dir(live.parent)
+        os.replace(backup, live)
+        self._fsync_dir(live.parent)
+        self._remove_tree_and_sync(discard)
+
+    def _reset_status_payload(self) -> dict:
+        status = self.read_status()
+        status["active_slot"] = None
+        status["last_good_slot"] = None
+        status["candidate_slot"] = None
+        status["candidate_version"] = None
+        status["candidate_state"] = None
+        status["candidate_attempts"] = 0
+        return status
+
+    def _recover_transaction(self) -> None:
+        """Complete or roll back an interrupted persistent lifecycle operation.
+
+        Transaction state is written and synced before every destructive rename.
+        An interrupted slot/factory replacement rolls back to the old tree; an
+        interrupted reset is completed only after its durable commit decision.
+        """
+        if not self.transaction_path.exists():
+            return
+        self._recovering_transaction = True
+        try:
+            try:
+                with self.transaction_path.open("r", encoding="utf-8") as handle:
+                    transaction = json.load(handle)
+            except (OSError, json.JSONDecodeError) as exc:
+                raise CustomizationError(f"cannot recover malformed transaction record: {exc}") from exc
+
+            kind = transaction.get("kind")
+            if kind in {"user-install", "factory-install"}:
+                live = self.slot(transaction["slot"]).path if kind == "user-install" else self.factory_path
+                backup = self.staging_root / transaction["backup"]
+                temporary = self.staging_root / transaction["temporary"]
+                discard = self.staging_root / f"{transaction['temporary']}.recovery-discard"
+                # The replacement was not referenced by status yet. Prefer the
+                # prior tree even if the cut happened after the new rename.
+                self._restore_backup(live, backup, discard)
+                self._remove_tree_and_sync(temporary)
+                self._clear_transaction()
+                return
+
+            if kind == "factory-reset":
+                backup = self.staging_root / transaction["backup"]
+                phase = transaction.get("phase")
+                if phase == "commit-decided":
+                    # The operation is now authoritative even if power failed
+                    # before status.json was updated.
+                    self.write_status(self._reset_status_payload())
+                    self._remove_tree_and_sync(backup)
+                else:
+                    self._restore_backup(
+                        self.root / "state", backup, self.staging_root / "state.reset.discard"
+                    )
+                self._clear_transaction()
+                return
+
+            raise CustomizationError(f"cannot recover unknown transaction kind: {kind!r}")
+        finally:
+            self._recovering_transaction = False
 
     def _manifest_is_compatible(self, manifest_path: Path) -> tuple[bool, str]:
         """Check an installed manifest without allowing a bad one to block boot."""
@@ -398,12 +505,27 @@ class CustomizationManager:
         backup_slot_path = self.staging_root / f"user-{slot_name}.backup"
         if backup_slot_path.exists():
             shutil.rmtree(backup_slot_path)
+            self._fsync_dir(backup_slot_path.parent)
+        self._write_transaction(
+            {
+                "kind": "user-install",
+                "slot": slot_name,
+                "temporary": tmp_dir.name,
+                "backup": backup_slot_path.name,
+            }
+        )
         if old_slot_path.exists():
             os.replace(old_slot_path, backup_slot_path)
+            self._fsync_dir(old_slot_path.parent)
         os.replace(tmp_dir, old_slot_path)
         self._fsync_dir(old_slot_path.parent)
         if backup_slot_path.exists():
             shutil.rmtree(backup_slot_path)
+            self._fsync_dir(backup_slot_path.parent)
+
+        # The slot is now complete and durable.  Its replacement transaction
+        # is finished before candidate metadata can reference this slot.
+        self._clear_transaction()
 
         status["candidate_slot"] = slot_name
         status["candidate_version"] = manifest.get("version")
@@ -440,13 +562,24 @@ class CustomizationManager:
         backup_dir = self.staging_root / "factory.backup"
         if backup_dir.exists():
             shutil.rmtree(backup_dir)
+            self._fsync_dir(backup_dir.parent)
+        self._write_transaction(
+            {
+                "kind": "factory-install",
+                "temporary": tmp_dir.name,
+                "backup": backup_dir.name,
+            }
+        )
         if self.factory_path.exists():
             os.replace(self.factory_path, backup_dir)
+            self._fsync_dir(self.factory_path.parent)
         os.replace(tmp_dir, self.factory_path)
         self._fsync_dir(self.factory_path.parent)
         if backup_dir.exists():
             shutil.rmtree(backup_dir)
+            self._fsync_dir(backup_dir.parent)
 
+        self._clear_transaction()
         status = self.read_status()
         self.write_status(status)
         return {
@@ -523,16 +656,28 @@ class CustomizationManager:
 
     def factory_reset(self, wipe_state: bool = False) -> dict:
         status = self.read_status()
-        status["active_slot"] = None
-        status["last_good_slot"] = None
-        status["candidate_slot"] = None
-        status["candidate_version"] = None
-        status["candidate_state"] = None
-        status["candidate_attempts"] = 0
-        self.write_status(status)
-        if wipe_state and self.state_etc_path.exists():
-            shutil.rmtree(self.state_etc_path)
+        backup = self.staging_root / "state.reset.backup"
+        if backup.exists():
+            self._remove_tree_and_sync(backup)
+        self._write_transaction(
+            {"kind": "factory-reset", "phase": "prepared", "backup": backup.name}
+        )
+        if wipe_state and (self.root / "state").exists():
+            os.replace(self.root / "state", backup)
+            self._fsync_dir(self.root)
             self.state_etc_path.mkdir(parents=True, exist_ok=True)
+            self._fsync_dir(self.state_etc_path)
+            self._fsync_dir(self.state_etc_path.parent)
+
+        # Once this record is durable recovery must finish the reset, even if
+        # power is lost before status.json is replaced.
+        self._write_transaction(
+            {"kind": "factory-reset", "phase": "commit-decided", "backup": backup.name}
+        )
+        status = self._reset_status_payload()
+        self.write_status(status)
+        self._remove_tree_and_sync(backup)
+        self._clear_transaction()
         return status
 
     def _validate_relative_etc_path(self, relative: Path) -> None:
@@ -764,7 +909,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         max_attempts=args.max_attempts,
         issue_path=Path(args.issue_path),
     )
+    lifecycle_lock = manager.operation_lock()
     try:
+        lifecycle_lock.__enter__()
         if args.command == "validate":
             result = manager.validate_payload(Path(args.directory), current_core_os=args.core_os_version)
         elif args.command == "install":
@@ -796,6 +943,8 @@ def main(argv: Optional[list[str]] = None) -> int:
             raise CustomizationError(f"unsupported command {args.command}")
     except (CustomizationError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
         parser.exit(status=1, message=f"error: {exc}\n")
+    finally:
+        lifecycle_lock.__exit__(None, None, None)
 
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
