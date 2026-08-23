@@ -95,7 +95,6 @@ mount_overlay_etc() {
         log "boot-prepare missing state_work_etc_path"
         return 1
     }
-
     ensure_dir "$ROOTFS_ETC_BIND" || return 1
     ensure_dir "$STATE_ETC_PATH" || return 1
     ensure_dir "$STATE_WORK_ETC_PATH" || return 1

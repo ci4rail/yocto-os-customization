@@ -7,8 +7,8 @@
 
 Install an `os-customization` Mender Update Module whose payload type is also
 `os-customization`. It receives one archive containing the extracted
-customization-set directory (`manifest.json`, `etc/`, and optional
-`whiteouts.txt`), extracts it safely to a temporary directory, and invokes:
+customization-set directory (`manifest.json` and `etc/`), extracts it safely
+to a temporary directory, and invokes:
 
 ```sh
 os-customization-mender-install --no-reboot <payload-dir>

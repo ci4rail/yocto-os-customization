@@ -433,6 +433,8 @@ class TargetContext:
         return f"v{match.group(1)}"
 
     def write_rootfs_file(self, path: str, content: str, label: str) -> None:
+        if not path.startswith("/"):
+            raise ScenarioError(f"rootfs path must be absolute: {path}")
         temp_dir = tempfile.TemporaryDirectory(prefix=f"{self.scenario_id}-rootfs-")
         self._temp_dirs.append(temp_dir)
         local_file = Path(temp_dir.name) / Path(path).name
@@ -441,8 +443,21 @@ class TargetContext:
         self.scp_to_remote(local_file, remote_temp, label=f"upload {label}")
         escaped_path = shlex.quote(path)
         escaped_temp = shlex.quote(remote_temp)
+        rootfs_bind_path = shlex.quote(f"/run/rootfs-etc{path.removeprefix('/etc')}")
+        can_use_rootfs_etc_bind = path == "/etc" or path.startswith("/etc/")
+        bind_condition = "grep -Fqs ' /run/rootfs-etc ' /proc/mounts" if can_use_rootfs_etc_bind else "false"
         self.run_remote(
-            f"mount -o remount,rw / && cp {escaped_temp} {escaped_path} && mount -o remount,ro / && rm -f {escaped_temp}",
+            "set -eu; "
+            f"if {bind_condition} && [ -e {rootfs_bind_path} ]; then "
+            "mount -o remount,rw /; "
+            "mount -o remount,bind,rw /run/rootfs-etc; "
+            f"cp {escaped_temp} {rootfs_bind_path}; "
+            "mount -o remount,bind,ro /run/rootfs-etc; "
+            "mount -o remount,ro /; "
+            "else "
+            f"mount -o remount,rw /; cp {escaped_temp} {escaped_path}; mount -o remount,ro /; "
+            "fi; "
+            f"rm -f {escaped_temp}",
             label=f"write {label}",
         )
 

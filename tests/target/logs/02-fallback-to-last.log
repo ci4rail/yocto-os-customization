@@ -1,6 +1,6 @@
-[2026-08-23T19:18:18Z] SCENARIO 02: Roll back to the last-known-good customization after a failed health check
-[2026-08-23T19:18:18Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> true
-[2026-08-23T19:18:21Z] STDERR connectivity:
+[2026-08-23T19:45:14Z] SCENARIO 02: Roll back to the last-known-good customization after a failed health check
+[2026-08-23T19:45:14Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> true
+[2026-08-23T19:45:17Z] STDERR connectivity:
 ssh: connect to host <target> port 22: No route to host
-[2026-08-23T19:18:21Z] RESULT connectivity: exit=255
-[2026-08-23T19:18:21Z] SCENARIO 02 FAIL: command failed (connectivity): exit=255
+[2026-08-23T19:45:17Z] RESULT connectivity: exit=255
+[2026-08-23T19:45:17Z] SCENARIO 02 FAIL: command failed (connectivity): exit=255

@@ -91,15 +91,10 @@ Install a trusted factory payload with:
 os-customization-set install-factory /path/to/factory-payload
 ```
 
-The operation stages the complete set, applies `whiteouts.txt`, and atomically
-replaces `/data/os-customization/factory`. It does not use USER A/B slots, does
-not create a candidate, and does not reboot; reboot after installation to make
-the new FACTORY layer effective.
-
-Each whiteout is installed as the OverlayFS-required `0:0` character device.
-The installation process must therefore have permission to create device nodes;
-it fails instead of silently installing a non-functional whiteout when that
-permission is unavailable.
+The operation stages the complete set and atomically replaces
+`/data/os-customization/factory`. It does not use USER A/B slots, does not
+create a candidate, and does not reboot; reboot after installation to make the
+new FACTORY layer effective.
 
 Factory installation deliberately does not run USER payload validation, Core
 OS compatibility checks, built-in syntax validators, or health checks. It is
@@ -235,21 +230,10 @@ Systemd unit files and enabling symlinks can be supplied below
 effectively become a software-deployment mechanism. Use units only for
 configuration of trusted Core OS programs.
 
-### Deleting a lower-layer file
+### Inherited paths
 
-Omitting a path means **inherit** it from FACTORY or SYSROOT. To explicitly
-hide a lower-layer path, add `whiteouts.txt` beside `manifest.json`:
-
-```text
-# whiteouts.txt
-/etc/unwanted.conf
-/etc/customer/obsolete.conf
-```
-
-Each non-empty, non-comment line must be an absolute path in `/etc`. The
-installer turns it into the appropriate OverlayFS whiteout in the USER slot.
-Do not try to represent deletion by creating an empty file or by leaving the
-file out of the payload.
+Omitting a path means **inherit** it from FACTORY or SYSROOT. Format version 1
+does not support deleting inherited paths.
 
 ## Installation and activation lifecycle
 
@@ -418,15 +402,14 @@ already extracted customization-set directory. Its archive root contains:
 ```text
 manifest.json
 etc/
-whiteouts.txt               # optional
 ```
 
 The module extracts that archive into a private temporary directory, checks
 that it has precisely this top-level layout, and passes that directory to the
 manager. The manager remains responsible for validating the manifest, path
-restrictions, symlinks, whiteouts, syntax, and Core OS compatibility. The
-module must reject additional payload files and must use extraction rules that
-cannot write outside its temporary directory.
+restrictions, symlinks, syntax, and Core OS compatibility. The module must
+reject additional payload files and must use extraction rules that cannot write
+outside its temporary directory.
 
 For example, the Artifact is created with a custom payload type and explicit
 customization version (replace the device type and paths as appropriate):

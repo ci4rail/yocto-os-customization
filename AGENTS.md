@@ -397,7 +397,6 @@ permissions
 ownership
 file types
 symlinks
-whiteouts
 OS compatibility
 configuration syntax
 ```
@@ -632,24 +631,6 @@ FACTORY:    foo.conf
 => USER/foo.conf
 ```
 
-## 14.3 Delete
-
-USER explicitly contains an OverlayFS whiteout for the path:
-
-```text
-USER:       whiteout(foo.conf)
-FACTORY:    foo.conf
-SYSROOT:    foo.conf
-
-=> path does not exist
-```
-
-The customization-set format and installer must explicitly support whiteouts/deletions.
-
-Do not represent deletion simply by omitting a file. Omission means inheritance.
-
----
-
 # 15. Manifest
 
 Every customization-set must contain metadata describing the set.
@@ -672,7 +653,6 @@ hashes
 permissions
 ownership
 symlinks
-whiteouts
 health check
 compatibility constraints
 ```
@@ -1122,14 +1102,13 @@ When implementing or modifying this subsystem:
 14. Validate customization content before candidate activation.
 15. Do not make assumptions that A or B has a permanent role.
 16. Preserve enough state to recover automatically from an unbootable candidate.
-17. Support explicit deletion of lower-layer files using OverlayFS whiteout semantics.
-18. Consider interaction with Core OS A/B updates whenever changing the customization format or boot logic.
-19. Keep `os-customization-set` independent of Mender.
-20. For normal field deployment, enforce the dependency chain `core-api-server → Mender → os-customization-set`.
-21. Perform Mender Artifact signature verification in Mender, not in `os-customization-set`.
-22. Do not let `core-api-server` bypass Mender for normal customer field installation.
-23. Treat Mender authentication and customization content validation as separate security controls.
-24. Prefer simple, deterministic boot-time behavior over complex live filesystem manipulation.
+17. Consider interaction with Core OS A/B updates whenever changing the customization format or boot logic.
+18. Keep `os-customization-set` independent of Mender.
+19. For normal field deployment, enforce the dependency chain `core-api-server → Mender → os-customization-set`.
+20. Perform Mender Artifact signature verification in Mender, not in `os-customization-set`.
+21. Do not let `core-api-server` bypass Mender for normal customer field installation.
+22. Treat Mender authentication and customization content validation as separate security controls.
+23. Prefer simple, deterministic boot-time behavior over complex live filesystem manipulation.
 
 ---
 
