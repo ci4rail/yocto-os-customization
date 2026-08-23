@@ -1,0 +1,12 @@
+boot_id=31f2d5ca-05bb-4efd-bca9-7745792fa516
+
+status_file=present
+
+boot_selection=present
+
+os_customization_set=/usr/bin/os-customization-set
+
+rootfs_wrapper=init.os-customization
+
+check_service=disabled
+disabled

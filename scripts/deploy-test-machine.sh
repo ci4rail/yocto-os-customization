@@ -5,15 +5,30 @@ set -eu
 TARGET_HOST=${TARGET_HOST:-}
 TARGET_USER=${TARGET_USER:-root}
 TARGET_PREFIX=${TARGET_PREFIX:-/data/os-customization-tools}
+TARGET_PASSWORD=${TARGET_PASSWORD:-}
+SSH=${SSH:-}
+SCP=${SCP:-}
+REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+if [ -n "$TARGET_PASSWORD" ]; then
+    if ! command -v sshpass >/dev/null 2>&1; then
+        echo "TARGET_PASSWORD requires sshpass to be installed" >&2
+        exit 1
+    fi
+    export SSHPASS=${SSHPASS:-$TARGET_PASSWORD}
+    SSH=${SSH:-sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no}
+    SCP=${SCP:-sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no}
+fi
+
 SSH=${SSH:-ssh}
 SCP=${SCP:-scp}
-REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 usage() {
     cat <<'EOF'
 Usage: deploy-test-machine.sh [--skip-services] [--activate-services] [--rootfs-stage] [--activate-init-wrapper]
 
 Environment:
+    TARGET_PASSWORD       Optional SSH password. When set, default SSH/SCP use sshpass.
   SSH / SCP              Override transport commands.
   TARGET_HOST            Target hostname or IP.
   TARGET_USER            Target SSH user.
@@ -74,6 +89,8 @@ trap 'rm -rf "$tmpdir"' EXIT
 service_python_prefix=$TARGET_PREFIX/lib/os-customization/python
 service_libexec_prefix=$TARGET_PREFIX/libexec
 service_bin_prefix=$TARGET_PREFIX/bin
+service_etc_root=/etc
+service_etc_bind_rw_opened=0
 
 if [ "$rootfs_stage" -eq 1 ]; then
     service_python_prefix=/usr/lib/os-customization/python
@@ -99,6 +116,22 @@ close_rootfs_ro() {
     rootfs_rw_opened=0
 }
 
+open_service_etc_rw() {
+    if [ "$service_etc_root" != /run/rootfs-etc ] || [ "$service_etc_bind_rw_opened" -eq 1 ]; then
+        return 0
+    fi
+    $SSH "$remote" "mount -o remount,bind,rw /run/rootfs-etc"
+    service_etc_bind_rw_opened=1
+}
+
+close_service_etc_ro() {
+    if [ "$service_etc_root" != /run/rootfs-etc ] || [ "$service_etc_bind_rw_opened" -eq 0 ]; then
+        return 0
+    fi
+    $SSH "$remote" "mount -o remount,bind,ro /run/rootfs-etc"
+    service_etc_bind_rw_opened=0
+}
+
 $SSH "$remote" "mkdir -p $TARGET_PREFIX/bin $TARGET_PREFIX/lib/os-customization/python/os_customization $TARGET_PREFIX/libexec $TARGET_PREFIX/sbin /etc/systemd/system"
 
 $SCP "$REPO_ROOT/bin/os-customization-set" "$remote:$TARGET_PREFIX/bin/os-customization-set"
@@ -113,17 +146,28 @@ $SSH "$remote" "chmod 0755 $TARGET_PREFIX/bin/os-customization-set $TARGET_PREFI
 if [ "$skip_services" -eq 0 ]; then
     if [ "$rootfs_stage" -eq 1 ]; then
         open_rootfs_rw
+        if $SSH "$remote" "test -d /run/rootfs-etc/systemd"; then
+            service_etc_root=/run/rootfs-etc
+            open_service_etc_rw
+        fi
     fi
     sed "s#/usr/lib/os-customization/python#$service_python_prefix#g; s#/usr/libexec#$service_libexec_prefix#g; s#/usr/bin#$service_bin_prefix#g" \
         "$REPO_ROOT/systemd/os-customization-check.service" > "$tmpdir/os-customization-check.service"
     sed "s#/usr/lib/os-customization/python#$service_python_prefix#g; s#/usr/libexec#$service_libexec_prefix#g; s#/usr/bin#$service_bin_prefix#g" \
         "$REPO_ROOT/systemd/os-customization-factory-reset.service" > "$tmpdir/os-customization-factory-reset.service"
-    $SCP "$tmpdir/os-customization-check.service" "$remote:/etc/systemd/system/os-customization-check.service"
-    $SCP "$tmpdir/os-customization-factory-reset.service" "$remote:/etc/systemd/system/os-customization-factory-reset.service"
+    $SSH "$remote" "mkdir -p $service_etc_root/systemd/system"
+    $SCP "$tmpdir/os-customization-check.service" "$remote:$service_etc_root/systemd/system/os-customization-check.service"
+    $SCP "$tmpdir/os-customization-factory-reset.service" "$remote:$service_etc_root/systemd/system/os-customization-factory-reset.service"
     if [ "$activate_services" -eq 1 ]; then
-        $SSH "$remote" "systemctl daemon-reload && systemctl enable os-customization-check.service os-customization-factory-reset.service"
+        if [ "$service_etc_root" = /etc ]; then
+            $SSH "$remote" "systemctl daemon-reload && systemctl enable os-customization-check.service os-customization-factory-reset.service"
+        else
+            $SSH "$remote" "set -eu; mkdir -p $service_etc_root/systemd/system/multi-user.target.wants && ln -snf ../os-customization-check.service $service_etc_root/systemd/system/multi-user.target.wants/os-customization-check.service && ln -snf ../os-customization-factory-reset.service $service_etc_root/systemd/system/multi-user.target.wants/os-customization-factory-reset.service && systemctl daemon-reload"
+        fi
     fi
 fi
+
+close_service_etc_ro
 
 if [ "$rootfs_stage" -eq 1 ]; then
     open_rootfs_rw
