@@ -8,6 +8,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -23,10 +24,26 @@ DEFAULT_REMOTE_PAYLOAD_ROOT = "/tmp/os-customization-target-tests"
 DEFAULT_OS_CUSTOMIZATION_SET = "/usr/bin/os-customization-set"
 BOOT_SELECTION_PATH = "/run/os-customization/boot-selection.json"
 CORE_OS_VERSION_PATTERN = re.compile(r"(?:^|_)v(\d+\.\d+\.\d+)(?=\.|\s|$)")
+DEFAULT_SSH_TIMEOUT = 20.0
+DEFAULT_SCP_TIMEOUT = 120.0
+DEFAULT_BOOT_PROBE_TIMEOUT = 10.0
 
 
 class ScenarioError(RuntimeError):
     pass
+
+
+def _timeout_from_environment(name: str, default: float) -> float:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    try:
+        timeout = float(value)
+    except ValueError as exc:
+        raise ScenarioError(f"{name} must be a positive number of seconds") from exc
+    if timeout <= 0:
+        raise ScenarioError(f"{name} must be a positive number of seconds")
+    return timeout
 
 
 @dataclass
@@ -90,6 +107,23 @@ class TargetContext:
         self._temp_dirs: list[tempfile.TemporaryDirectory[str]] = []
         self._common_env = os.environ.copy()
         self._use_sshpass = False
+        self.ssh_timeout = _timeout_from_environment("TARGET_SSH_TIMEOUT", DEFAULT_SSH_TIMEOUT)
+        self.scp_timeout = _timeout_from_environment("TARGET_SCP_TIMEOUT", DEFAULT_SCP_TIMEOUT)
+        self.boot_probe_timeout = _timeout_from_environment(
+            "TARGET_BOOT_PROBE_TIMEOUT", DEFAULT_BOOT_PROBE_TIMEOUT
+        )
+        self._ssh_options = [
+            "-o",
+            "ConnectTimeout=10",
+            "-o",
+            "ConnectionAttempts=1",
+            "-o",
+            "ServerAliveInterval=5",
+            "-o",
+            "ServerAliveCountMax=1",
+            "-o",
+            "NumberOfPasswordPrompts=1",
+        ]
 
         password = os.environ.get("TARGET_PASSWORD")
         if password and "SSHPASS" not in self._common_env:
@@ -112,29 +146,48 @@ class TargetContext:
             return ["sshpass", "-e", *base_command]
         return base_command
 
-    def _run(self, command: list[str], *, check: bool, label: str) -> CommandResult:
+    def _run(self, command: list[str], *, check: bool, label: str, timeout: Optional[float] = None) -> CommandResult:
         self.log(f"COMMAND {label}: {' '.join(shlex.quote(part) for part in command)}")
-        completed = subprocess.run(
+        process = subprocess.Popen(
             command,
-            check=False,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=self._common_env,
+            start_new_session=True,
         )
-        if completed.stdout:
-            self.log(f"STDOUT {label}:\n{completed.stdout}")
-        if completed.stderr:
-            self.log(f"STDERR {label}:\n{completed.stderr}")
-        self.log(f"RESULT {label}: exit={completed.returncode}")
-        if check and completed.returncode != 0:
-            raise ScenarioError(f"command failed ({label}): exit={completed.returncode}")
-        return CommandResult(completed.stdout, completed.stderr, completed.returncode)
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+            returncode = process.returncode
+        except subprocess.TimeoutExpired:
+            self.log(f"TIMEOUT {label}: exceeded {timeout:g}s; terminating command")
+            os.killpg(process.pid, signal.SIGTERM)
+            try:
+                stdout, stderr = process.communicate(timeout=2)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                stdout, stderr = process.communicate()
+            returncode = 124
+        if stdout:
+            self.log(f"STDOUT {label}:\n{stdout}")
+        if stderr:
+            self.log(f"STDERR {label}:\n{stderr}")
+        self.log(f"RESULT {label}: exit={returncode}")
+        if check and returncode != 0:
+            raise ScenarioError(f"command failed ({label}): exit={returncode}")
+        return CommandResult(stdout, stderr, returncode)
 
     def run_local(self, command: list[str], *, check: bool = True, label: str = "local") -> CommandResult:
         return self._run(command, check=check, label=label)
 
-    def run_remote(self, shell_command: str, *, check: bool = True, label: str = "remote") -> CommandResult:
+    def run_remote(
+        self,
+        shell_command: str,
+        *,
+        check: bool = True,
+        label: str = "remote",
+        timeout: Optional[float] = None,
+    ) -> CommandResult:
         if not self.target_host:
             raise ScenarioError("TARGET_HOST is required")
         ssh_command = self._wrap_transport(
@@ -146,11 +199,12 @@ class TargetContext:
                 "StrictHostKeyChecking=no",
                 "-o",
                 "UserKnownHostsFile=/dev/null",
+                *self._ssh_options,
                 self.remote,
                 shell_command,
             ]
         )
-        return self._run(ssh_command, check=check, label=label)
+        return self._run(ssh_command, check=check, label=label, timeout=timeout or self.ssh_timeout)
 
     def scp_to_remote(self, source: Path, destination: str, *, recursive: bool = False, label: str = "scp-upload") -> None:
         command = [
@@ -161,11 +215,12 @@ class TargetContext:
             "StrictHostKeyChecking=no",
             "-o",
             "UserKnownHostsFile=/dev/null",
+            *self._ssh_options,
         ]
         if recursive:
             command.append("-r")
         command.extend([str(source), f"{self.remote}:{destination}"])
-        self._run(self._wrap_transport(command), check=True, label=label)
+        self._run(self._wrap_transport(command), check=True, label=label, timeout=self.scp_timeout)
 
     def scp_from_remote(self, source: str, destination: Path, *, recursive: bool = False, label: str = "scp-download") -> None:
         command = [
@@ -176,11 +231,12 @@ class TargetContext:
             "StrictHostKeyChecking=no",
             "-o",
             "UserKnownHostsFile=/dev/null",
+            *self._ssh_options,
         ]
         if recursive:
             command.append("-r")
         command.extend([f"{self.remote}:{source}", str(destination)])
-        self._run(self._wrap_transport(command), check=True, label=label)
+        self._run(self._wrap_transport(command), check=True, label=label, timeout=self.scp_timeout)
 
     def run_os_customization(self, *args: str, check: bool = True, label: str = "os-customization-set") -> CommandResult:
         remote_command = " ".join(
@@ -202,7 +258,12 @@ class TargetContext:
         return json.loads(result.stdout)
 
     def current_boot_id(self, *, check: bool = True) -> str:
-        return self.run_remote("cat /proc/sys/kernel/random/boot_id", label="boot-id", check=check).stdout.strip()
+        return self.run_remote(
+            "cat /proc/sys/kernel/random/boot_id",
+            label="boot-id",
+            check=check,
+            timeout=self.boot_probe_timeout,
+        ).stdout.strip()
 
     def read_remote_file(self, path: str) -> str:
         return self.run_remote(f"cat {shlex.quote(path)}", label=f"read {path}").stdout
