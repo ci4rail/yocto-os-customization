@@ -1,7 +1,7 @@
 [Unit]
 Description=Validate OS customization candidate
 DefaultDependencies=yes
-After=multi-user.target network-online.target
+After=network-online.target docker.service chronyd.service sshd.service
 Wants=network-online.target
 ConditionPathExists=/data/os-customization/status.json
 
