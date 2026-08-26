@@ -9,7 +9,6 @@ import shlex
 import shutil
 import stat
 import subprocess
-import tempfile
 from dataclasses import dataclass
 from contextlib import contextmanager
 from pathlib import Path
@@ -822,18 +821,40 @@ class CustomizationManager:
 
     def _write_json_atomic(self, path: Path, payload: dict) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=str(path.parent))
+        # ``tempfile.mkstemp()`` obtains random bytes for its file name.  This
+        # method is called by preinit, before the kernel CSPRNG is necessarily
+        # initialized.  The parent directories are root-controlled and all
+        # lifecycle operations hold ``operation_lock``, so a deterministic
+        # exclusive name is sufficient here.  O_EXCL also safely handles stale
+        # temporary files left by a power loss.
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        fd = -1
+        tmp_path: Optional[Path] = None
+        for sequence in range(1024):
+            candidate = path.with_name(f".{path.name}.tmp-{os.getpid()}-{sequence}")
+            try:
+                fd = os.open(candidate, flags, 0o600)
+                tmp_path = candidate
+                break
+            except FileExistsError:
+                continue
+        if fd < 0 or tmp_path is None:
+            raise CustomizationError(f"unable to create atomic temporary file for {path}")
+
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                os.fchmod(handle.fileno(), 0o600)
                 json.dump(payload, handle, indent=2, sort_keys=True)
                 handle.write("\n")
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(tmp_name, path)
+            os.replace(tmp_path, path)
             self._fsync_dir(path.parent)
         finally:
-            if os.path.exists(tmp_name):
-                os.unlink(tmp_name)
+            if tmp_path.exists():
+                tmp_path.unlink()
 
     def _load_manifest_version(self, manifest_path: Path) -> Optional[str]:
         if not manifest_path.exists():

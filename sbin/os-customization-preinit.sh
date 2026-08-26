@@ -38,7 +38,9 @@ safe_run() {
 
 manager_available() {
     [ -x "$MANAGER" ] || return 1
-    PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" status >/dev/null 2>&1
+    # CPython otherwise waits for the kernel CSPRNG to seed its hash secret.
+    # Preinit only processes root-controlled lifecycle metadata at this point.
+    PYTHONHASHSEED=0 PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" status >/dev/null 2>&1
 }
 
 mount_api_fs() {
@@ -68,7 +70,7 @@ mount_overlay_etc() {
         return 1
     }
     boot_id=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || true)
-    boot_env=$(PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" boot-prepare-shell --boot-id "$boot_id" --boot-selection-path "$BOOT_SELECTION_PATH" 2>/dev/null) || {
+    boot_env=$(PYTHONHASHSEED=0 PYTHONPATH="$PYTHONPATH_DIR" "$MANAGER" --root "$OS_CUSTOMIZATION_ROOT" boot-prepare-shell --boot-id "$boot_id" --boot-selection-path "$BOOT_SELECTION_PATH" 2>/dev/null) || {
         log "boot-prepare-shell failed"
         return 1
     }
