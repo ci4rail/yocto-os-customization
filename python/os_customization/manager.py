@@ -138,6 +138,7 @@ class CustomizationManager:
             "candidate_version": None,
             "candidate_state": None,
             "candidate_attempts": 0,
+            "rollback_reason": None,
             "boot_id_last_seen": None,
             "factory_version": factory_version,
         }
@@ -313,6 +314,7 @@ class CustomizationManager:
         status["candidate_version"] = None
         status["candidate_state"] = None
         status["candidate_attempts"] = 0
+        status["rollback_reason"] = None
         return status
 
     def _recover_transaction(self) -> None:
@@ -530,6 +532,7 @@ class CustomizationManager:
         status["candidate_version"] = manifest.get("version")
         status["candidate_state"] = "pending"
         status["candidate_attempts"] = 0
+        status["rollback_reason"] = None
         self.write_status(status)
         return {
             "slot": slot_name,
@@ -623,7 +626,7 @@ class CustomizationManager:
         passed = all(item["passed"] for item in results)
         return {"slot": slot_name, "checks": results, "passed": passed}
 
-    def rollback(self) -> dict:
+    def rollback(self, reason: Optional[str] = None) -> dict:
         status = self.read_status()
         # A first-ever USER candidate has no last-known-good USER slot.  Its
         # safe rollback target is FACTORY plus SYSROOT, represented by no USER
@@ -634,6 +637,7 @@ class CustomizationManager:
         status["candidate_version"] = None
         status["candidate_state"] = "rolled-back"
         status["candidate_attempts"] = 0
+        status["rollback_reason"] = reason or "manual rollback requested"
         self.write_status(status)
         return status
 
@@ -749,7 +753,31 @@ class CustomizationManager:
             if not unit:
                 raise CustomizationError(f"health check #{index} must provide a unit")
             completed = subprocess.run(
-                ["systemctl", "is-active", "--quiet", unit],
+                ["systemctl", "is-active", unit],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            unit_state = subprocess.run(
+                [
+                    "systemctl",
+                    "show",
+                    "--property=LoadState",
+                    "--property=UnitFileState",
+                    "--property=FragmentPath",
+                    "--property=ActiveState",
+                    "--property=SubState",
+                    "--property=Result",
+                    unit,
+                ],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            unit_enabled = subprocess.run(
+                ["systemctl", "is-enabled", unit],
                 check=False,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -761,8 +789,11 @@ class CustomizationManager:
                 "unit": unit,
                 "passed": completed.returncode == 0,
                 "returncode": completed.returncode,
-                "stdout": completed.stdout,
-                "stderr": completed.stderr,
+                "stdout": completed.stdout + unit_state.stdout,
+                "stderr": completed.stderr + unit_state.stderr,
+                "is_enabled_returncode": unit_enabled.returncode,
+                "is_enabled_stdout": unit_enabled.stdout,
+                "is_enabled_stderr": unit_enabled.stderr,
             }
         if check_type == "path_exists":
             path = check.get("path")

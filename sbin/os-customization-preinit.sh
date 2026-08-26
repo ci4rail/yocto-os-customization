@@ -116,9 +116,14 @@ mount_overlay_etc() {
         log "user customization excluded ($SELECTION_REASON)"
     fi
 
+    log "mounting /etc overlay: upper=$STATE_ETC_PATH work=$STATE_WORK_ETC_PATH lower=$lowerdirs"
+
     safe_run mount -n -t overlay overlay \
         -o "upperdir=$STATE_ETC_PATH,workdir=$STATE_WORK_ETC_PATH,lowerdir=$lowerdirs,index=off,xino=off,redirect_dir=off,metacopy=off" \
-        /etc
+        /etc || return 1
+
+    mounted_overlay=$(awk '$2 == "/etc" && $3 == "overlay" { print; exit }' /proc/mounts)
+    [ -n "$mounted_overlay" ] && log "mounted /etc overlay: $mounted_overlay"
 }
 
 start_real_init() {

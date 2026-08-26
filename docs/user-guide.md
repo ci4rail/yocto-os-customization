@@ -539,11 +539,12 @@ customer updates:
 | `scripts/restore-target-init.sh` | Restores the stock init path after a live init-wrapper test. |
 | `scripts/smoke-activate-init.py` | Smoke-tests activation of the init wrapper. |
 
-`deploy-test-machine.sh` uses `/data/os-customization-tools` by default and
-does not change `/sbin/init`. `--rootfs-stage` copies tools to their rootfs
-locations, while `--rootfs-stage --activate-init-wrapper` explicitly switches
-`/sbin/init` to the preinit wrapper. Use the latter only on a test device with a
-recovery plan.
+`deploy-test-machine.sh --rootfs-stage` installs production runtime files below
+`/usr` and `/sbin` without changing `/sbin/init`. Development-only staging may
+use `/data/os-customization-tools`, but production helpers never search that
+location for Python modules. `--rootfs-stage --activate-init-wrapper`
+explicitly switches `/sbin/init` to the preinit wrapper; use it only on a test
+device with a recovery plan.
 
 The end-to-end test refuses to run until it finds the boot-selection marker,
 which prevents testing commit and rollback on a device whose boot path has not

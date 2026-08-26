@@ -1,0 +1,767 @@
+[2026-08-26T19:33:49Z] SCENARIO 05: Install, enable, and health-check a customization-provided systemd service
+[2026-08-26T19:33:49Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> true
+[2026-08-26T19:33:50Z] RESULT connectivity: exit=0
+[2026-08-26T19:33:50Z] COMMAND cli-present: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -x /usr/bin/os-customization-set'
+[2026-08-26T19:33:51Z] RESULT cli-present: exit=0
+[2026-08-26T19:33:51Z] COMMAND boot-integration: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -f /run/os-customization/boot-selection.json'
+[2026-08-26T19:33:51Z] RESULT boot-integration: exit=0
+[2026-08-26T19:33:51Z] COMMAND health-timer-enabled: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled os-customization-check.timer'
+[2026-08-26T19:33:52Z] STDOUT health-timer-enabled:
+enabled
+[2026-08-26T19:33:52Z] RESULT health-timer-enabled: exit=0
+[2026-08-26T19:33:52Z] ACTION factory reset with state wipe
+[2026-08-26T19:33:52Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:33:53Z] STDOUT boot-id:
+6cb7196c-566a-4ca9-bcf8-aaa6928a3c3f
+[2026-08-26T19:33:53Z] RESULT boot-id: exit=0
+[2026-08-26T19:33:53Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-08-26T19:33:54Z] STDOUT factory-reset:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:33:54Z] RESULT factory-reset: exit=0
+[2026-08-26T19:33:54Z] ACTION reboot: apply factory reset
+[2026-08-26T19:33:54Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-08-26T19:33:55Z] RESULT reboot: exit=0
+[2026-08-26T19:33:55Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:33:56Z] STDERR boot-id:
+kex_exchange_identification: read: Connection reset by peer
+[2026-08-26T19:33:56Z] RESULT boot-id: exit=255
+[2026-08-26T19:33:58Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:33:58Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection refused
+[2026-08-26T19:33:58Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:00Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:09Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:34:09Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection timed out
+[2026-08-26T19:34:09Z] RESULT boot-id: exit=124
+[2026-08-26T19:34:11Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:13Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-08-26T19:34:13Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:15Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:21Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-08-26T19:34:21Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:23Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:25Z] STDOUT boot-id:
+892aefca-991e-4d89-960d-cc060ebde327
+[2026-08-26T19:34:25Z] RESULT boot-id: exit=0
+[2026-08-26T19:34:25Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:26Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:26Z] RESULT status: exit=0
+[2026-08-26T19:34:26Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:27Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:27Z] RESULT status: exit=0
+[2026-08-26T19:34:27Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:29Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:29Z] RESULT status: exit=0
+[2026-08-26T19:34:29Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:30Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:30Z] RESULT status: exit=0
+[2026-08-26T19:34:30Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}
+[2026-08-26T19:34:30Z] COMMAND remove-service-marker: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'rm -f /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:34:30Z] RESULT remove-service-marker: exit=0
+[2026-08-26T19:34:30Z] COMMAND prepare-upload-dir: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'rm -rf /tmp/os-customization-target-tests/05-service && mkdir -p /tmp/os-customization-target-tests'
+[2026-08-26T19:34:31Z] RESULT prepare-upload-dir: exit=0
+[2026-08-26T19:34:31Z] COMMAND upload service: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 -r /tmp/05-install-service-1ko_x075 root@<target>:/tmp/os-customization-target-tests/05-service
+[2026-08-26T19:34:33Z] RESULT upload service: exit=0
+[2026-08-26T19:34:33Z] COMMAND create-service-enablement-link: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'mkdir -p /tmp/os-customization-target-tests/05-service/etc/systemd/system/multi-user.target.wants && rm -f /tmp/os-customization-target-tests/05-service/etc/systemd/system/multi-user.target.wants/os-customization-target-test-05.service && ln -s ../os-customization-target-test-05.service /tmp/os-customization-target-tests/05-service/etc/systemd/system/multi-user.target.wants/os-customization-target-test-05.service && test -L /tmp/os-customization-target-tests/05-service/etc/systemd/system/multi-user.target.wants/os-customization-target-test-05.service'
+[2026-08-26T19:34:33Z] RESULT create-service-enablement-link: exit=0
+[2026-08-26T19:34:33Z] COMMAND install service: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization install /tmp/os-customization-target-tests/05-service'
+[2026-08-26T19:34:35Z] STDOUT install service:
+{
+  "slot": "A",
+  "status": {
+    "active_slot": null,
+    "active_version": null,
+    "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+    "boot_selection_reason": "no-user-customization",
+    "candidate_attempts": 0,
+    "candidate_slot": "A",
+    "candidate_state": "pending",
+    "candidate_version": "target-test-05-service-1.0.0",
+    "factory_version": null,
+    "format_version": 1,
+    "last_good_slot": null,
+    "last_good_version": null,
+    "rollback_reason": null
+  },
+  "version": "target-test-05-service-1.0.0"
+}
+[2026-08-26T19:34:35Z] RESULT install service: exit=0
+[2026-08-26T19:34:35Z] COMMAND exists /tmp/os-customization-target-test-05-ran: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -e /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:34:36Z] RESULT exists /tmp/os-customization-target-test-05-ran: exit=1
+[2026-08-26T19:34:36Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:36Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": "A",
+  "candidate_state": "pending",
+  "candidate_version": "target-test-05-service-1.0.0",
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:36Z] RESULT status: exit=0
+[2026-08-26T19:34:36Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:37Z] STDOUT boot-id:
+892aefca-991e-4d89-960d-cc060ebde327
+[2026-08-26T19:34:37Z] RESULT boot-id: exit=0
+[2026-08-26T19:34:37Z] ACTION reboot: activate scenario 05 service customization
+[2026-08-26T19:34:37Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-08-26T19:34:37Z] RESULT reboot: exit=0
+[2026-08-26T19:34:37Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:39Z] STDERR boot-id:
+kex_exchange_identification: read: Connection reset by peer
+[2026-08-26T19:34:39Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:41Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:41Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection refused
+[2026-08-26T19:34:41Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:43Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:53Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:34:53Z] RESULT boot-id: exit=124
+[2026-08-26T19:34:55Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:05Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:35:05Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection timed out
+[2026-08-26T19:35:05Z] RESULT boot-id: exit=124
+[2026-08-26T19:35:07Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:08Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:08Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:08Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:08Z] RESULT service-state: exit=0
+[2026-08-26T19:35:08Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-active --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:09Z] RESULT service-state: exit=0
+[2026-08-26T19:35:09Z] COMMAND read /tmp/os-customization-target-test-05-ran: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:35:09Z] STDOUT read /tmp/os-customization-target-test-05-ran:
+scenario-05-service-ran
+[2026-08-26T19:35:09Z] RESULT read /tmp/os-customization-target-test-05-ran: exit=0
+[2026-08-26T19:35:09Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:11Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 1,
+  "candidate_slot": "A",
+  "candidate_state": "pending",
+  "candidate_version": "target-test-05-service-1.0.0",
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:11Z] RESULT status: exit=0
+[2026-08-26T19:35:11Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:12Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:12Z] RESULT status: exit=0
+[2026-08-26T19:35:14Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:15Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:15Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:15Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:16Z] RESULT service-state: exit=0
+[2026-08-26T19:35:16Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-active --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:16Z] RESULT service-state: exit=0
+[2026-08-26T19:35:16Z] COMMAND read /tmp/os-customization-target-test-05-ran: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:35:17Z] STDOUT read /tmp/os-customization-target-test-05-ran:
+scenario-05-service-ran
+[2026-08-26T19:35:17Z] RESULT read /tmp/os-customization-target-test-05-ran: exit=0
+[2026-08-26T19:35:17Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:18Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:18Z] RESULT status: exit=0
+[2026-08-26T19:35:18Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:19Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:19Z] RESULT status: exit=0
+[2026-08-26T19:35:19Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:20Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:20Z] RESULT status: exit=0
+[2026-08-26T19:35:20Z] WAIT satisfied: scenario 05 service activation: {"active_slot": "A", "active_version": "target-test-05-service-1.0.0", "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2", "boot_selection_reason": "candidate-compatible", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-05-service-1.0.0", "rollback_reason": null}
+[2026-08-26T19:35:20Z] SCENARIO 05 PASS
+[2026-08-26T19:35:20Z] ACTION factory reset with state wipe
+[2026-08-26T19:35:20Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:21Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:21Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:21Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-08-26T19:35:22Z] STDOUT factory-reset:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:22Z] RESULT factory-reset: exit=0
+[2026-08-26T19:35:22Z] ACTION reboot: apply factory reset
+[2026-08-26T19:35:22Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-08-26T19:35:23Z] RESULT reboot: exit=0
+[2026-08-26T19:35:23Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:24Z] STDERR boot-id:
+kex_exchange_identification: read: Connection reset by peer
+[2026-08-26T19:35:24Z] RESULT boot-id: exit=255
+[2026-08-26T19:35:26Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:26Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection refused
+[2026-08-26T19:35:26Z] RESULT boot-id: exit=255
+[2026-08-26T19:35:28Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:38Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:35:38Z] RESULT boot-id: exit=124
+[2026-08-26T19:35:40Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:50Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:35:50Z] RESULT boot-id: exit=124
+[2026-08-26T19:35:52Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:53Z] STDOUT boot-id:
+ab503f2b-deb0-4b0d-8d2d-0eebdd0962b1
+[2026-08-26T19:35:53Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:53Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:54Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:54Z] RESULT status: exit=0
+[2026-08-26T19:35:54Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:55Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:55Z] RESULT status: exit=0
+[2026-08-26T19:35:55Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:56Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:56Z] RESULT status: exit=0
+[2026-08-26T19:35:56Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:58Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:58Z] RESULT status: exit=0
+[2026-08-26T19:35:58Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}
+[2026-08-26T19:35:58Z] COMMAND remove-service-marker: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'rm -f /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:35:58Z] RESULT remove-service-marker: exit=0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      [2026-08-26T19:33:49Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": "rolled-back",
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": "candidate slot A failed health checks: [{\"index\": 1, \"is_enabled_returncode\": 1, \"is_enabled_stderr\": \"\", \"is_enabled_stdout\": \"disabled\\n\", \"passed\": false, \"returncode\": 3, \"stderr\": \"\", \"stdout\": \"inactive\\nResult=success\\nLoadState=loaded\\nActiveState=inactive\\nSubState=dead\\nFragmentPath=/etc/systemd/system/os-customization-target-test-05.service\\nUnitFileState=disabled\\n\", \"type\": \"systemd_unit_active\", \"unit\": \"os-customization-target-test-05.service\"}]"
+}
+[2026-08-26T19:33:49Z] RESULT status: exit=0
+[2026-08-26T19:33:51Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:33:52Z] STDOUT boot-id:
+6cb7196c-566a-4ca9-bcf8-aaa6928a3c3f
+[2026-08-26T19:33:52Z] RESULT boot-id: exit=0
+[2026-08-26T19:33:52Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:33:52Z] RESULT service-state: exit=4
+[2026-08-26T19:33:52Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:33:54Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": "rolled-back",
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": "candidate slot A failed health checks: [{\"index\": 1, \"is_enabled_returncode\": 1, \"is_enabled_stderr\": \"\", \"is_enabled_stdout\": \"disabled\\n\", \"passed\": false, \"returncode\": 3, \"stderr\": \"\", \"stdout\": \"inactive\\nResult=success\\nLoadState=loaded\\nActiveState=inactive\\nSubState=dead\\nFragmentPath=/etc/systemd/system/os-customization-target-test-05.service\\nUnitFileState=disabled\\n\", \"type\": \"systemd_unit_active\", \"unit\": \"os-customization-target-test-05.service\"}]"
+}
+[2026-08-26T19:33:54Z] RESULT status: exit=0
+[2026-08-26T19:33:54Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:33:55Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:33:55Z] RESULT status: exit=0
+[2026-08-26T19:33:57Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:33:57Z] STDERR boot-id:
+kex_exchange_identification: read: Connection reset by peer
+[2026-08-26T19:33:57Z] RESULT boot-id: exit=255
+[2026-08-26T19:33:59Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:08Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:34:08Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection timed out
+[2026-08-26T19:34:08Z] RESULT boot-id: exit=124
+[2026-08-26T19:34:10Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:13Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-08-26T19:34:13Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:15Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:21Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-08-26T19:34:21Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:23Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:25Z] STDOUT boot-id:
+892aefca-991e-4d89-960d-cc060ebde327
+[2026-08-26T19:34:25Z] RESULT boot-id: exit=0
+[2026-08-26T19:34:25Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:34:26Z] RESULT service-state: exit=4
+[2026-08-26T19:34:26Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:27Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:27Z] RESULT status: exit=0
+[2026-08-26T19:34:27Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:28Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:28Z] RESULT status: exit=0
+[2026-08-26T19:34:30Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:31Z] STDOUT boot-id:
+892aefca-991e-4d89-960d-cc060ebde327
+[2026-08-26T19:34:31Z] RESULT boot-id: exit=0
+[2026-08-26T19:34:31Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:34:31Z] RESULT service-state: exit=4
+[2026-08-26T19:34:31Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:33Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:33Z] RESULT status: exit=0
+[2026-08-26T19:34:33Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:34Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "a0118549-a230-4493-a472-6ec5516ab141",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:34:34Z] RESULT status: exit=0
+[2026-08-26T19:34:36Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:36Z] STDOUT boot-id:
+892aefca-991e-4d89-960d-cc060ebde327
+[2026-08-26T19:34:36Z] RESULT boot-id: exit=0
+[2026-08-26T19:34:36Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:34:36Z] RESULT service-state: exit=4
+[2026-08-26T19:34:36Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:34:39Z] STDERR status:
+kex_exchange_identification: read: Connection reset by peer
+[2026-08-26T19:34:39Z] RESULT status: exit=255
+[2026-08-26T19:34:41Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:41Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection refused
+[2026-08-26T19:34:41Z] RESULT boot-id: exit=255
+[2026-08-26T19:34:43Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:34:53Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:34:53Z] RESULT boot-id: exit=124
+[2026-08-26T19:34:55Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:05Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:35:05Z] RESULT boot-id: exit=124
+[2026-08-26T19:35:07Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:08Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:08Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:08Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:08Z] RESULT service-state: exit=0
+[2026-08-26T19:35:08Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-active --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:09Z] RESULT service-state: exit=0
+[2026-08-26T19:35:09Z] COMMAND read /tmp/os-customization-target-test-05-ran: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:35:09Z] STDOUT read /tmp/os-customization-target-test-05-ran:
+scenario-05-service-ran
+[2026-08-26T19:35:09Z] RESULT read /tmp/os-customization-target-test-05-ran: exit=0
+[2026-08-26T19:35:09Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:11Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 1,
+  "candidate_slot": "A",
+  "candidate_state": "pending",
+  "candidate_version": "target-test-05-service-1.0.0",
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-08-26T19:35:11Z] RESULT status: exit=0
+[2026-08-26T19:35:11Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:12Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:12Z] RESULT status: exit=0
+[2026-08-26T19:35:12Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:13Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:13Z] RESULT status: exit=0
+[2026-08-26T19:35:15Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:16Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:16Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:16Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:17Z] RESULT service-state: exit=0
+[2026-08-26T19:35:17Z] COMMAND service-state: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-active --quiet os-customization-target-test-05.service'
+[2026-08-26T19:35:17Z] RESULT service-state: exit=0
+[2026-08-26T19:35:17Z] COMMAND read /tmp/os-customization-target-test-05-ran: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /tmp/os-customization-target-test-05-ran'
+[2026-08-26T19:35:18Z] STDOUT read /tmp/os-customization-target-test-05-ran:
+scenario-05-service-ran
+[2026-08-26T19:35:18Z] RESULT read /tmp/os-customization-target-test-05-ran: exit=0
+[2026-08-26T19:35:18Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:19Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:19Z] RESULT status: exit=0
+[2026-08-26T19:35:19Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:20Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:20Z] RESULT status: exit=0
+[2026-08-26T19:35:20Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:35:22Z] STDOUT status:
+{
+  "active_slot": "A",
+  "active_version": "target-test-05-service-1.0.0",
+  "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": "A",
+  "last_good_version": "target-test-05-service-1.0.0",
+  "rollback_reason": null
+}
+[2026-08-26T19:35:22Z] RESULT status: exit=0
+[2026-08-26T19:35:22Z] WAIT satisfied: scenario 05 service activation: {"active_slot": "A", "active_version": "target-test-05-service-1.0.0", "boot_id_last_seen": "ecb41c9a-6ba6-455b-b555-48f2774deea2", "boot_selection_reason": "candidate-compatible", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-05-service-1.0.0", "rollback_reason": null}
+[2026-08-26T19:35:22Z] SCENARIO 05 PASS
+[2026-08-26T19:35:22Z] ACTION factory reset with state wipe
+[2026-08-26T19:35:22Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:35:22Z] STDOUT boot-id:
+ecb41c9a-6ba6-455b-b555-48f2774deea2
+[2026-08-26T19:35:22Z] RESULT boot-id: exit=0
+[2026-08-26T19:35:22Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-08-26T19:35:24Z] STDERR factory-reset:
+Connection to <target> closed by remote host.
+[2026-08-26T19:35:24Z] RESULT factory-reset: exit=255
+[2026-08-26T19:35:24Z] SCENARIO 05 CLEANUP FAIL: command failed (factory-reset): exit=255

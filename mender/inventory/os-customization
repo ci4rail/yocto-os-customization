@@ -11,7 +11,6 @@ def _prepend_pythonpath() -> None:
     candidate_paths = [
         script_path.parent.parent.parent / "lib" / "os-customization" / "python",
         Path("/usr/lib/os-customization/python"),
-        Path("/data/os-customization-tools/lib/os-customization/python"),
     ]
     for candidate in candidate_paths:
         candidate_str = str(candidate)

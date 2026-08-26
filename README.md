@@ -80,3 +80,7 @@ Before running the tests
 ```
 scripts/deploy-test-machine.sh --rootfs-stage --activate-services
 ```
+
+Production helpers load `os_customization` only from their installed `/usr`
+locations. `/data/os-customization-tools` is supported solely as a
+development-staging prefix for the deploy helper.

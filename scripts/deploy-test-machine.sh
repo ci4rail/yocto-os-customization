@@ -32,7 +32,9 @@ Environment:
   SSH / SCP              Override transport commands.
   TARGET_HOST            Target hostname or IP.
   TARGET_USER            Target SSH user.
-  TARGET_PREFIX          Install prefix on target.
+  TARGET_PREFIX          Development-staging prefix on target (default:
+                         /data/os-customization-tools). Production rootfs
+                         staging always installs under /usr and /sbin.
 
 This copies the implementation to a test machine but does not replace /sbin/init.
 For immutable-root systems it stages binaries below /data by default.

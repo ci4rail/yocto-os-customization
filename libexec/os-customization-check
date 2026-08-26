@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import subprocess
 import sys
@@ -16,7 +17,6 @@ def _prepend_pythonpath() -> None:
     candidate_paths = [
         script_path.parent.parent / "lib" / "os-customization" / "python",
         Path("/usr/lib/os-customization/python"),
-        Path("/data/os-customization-tools/lib/os-customization/python"),
     ]
     for candidate in candidate_paths:
         candidate_str = str(candidate)
@@ -37,6 +37,11 @@ def reboot_if_requested() -> None:
     subprocess.run(["systemctl", "reboot"], check=True)
 
 
+def rollback(manager: CustomizationManager, reason: str) -> None:
+    print(f"os-customization-check: rolling back candidate: {reason}", file=sys.stderr)
+    manager.rollback(reason=reason)
+
+
 def main() -> int:
     root = Path(os.environ.get("OS_CUSTOMIZATION_ROOT", "/data/os-customization"))
     max_attempts = int(os.environ.get("OS_CUSTOMIZATION_MAX_ATTEMPTS", "3"))
@@ -54,17 +59,22 @@ def main() -> int:
 
             matched, reason = manager.candidate_activation_matches(boot_selection_path)
             if not matched:
-                print(f"os-customization-check: {reason}", file=sys.stderr)
-                manager.rollback()
+                rollback(manager, reason)
                 reboot_if_requested()
                 return 1
 
             result = manager.run_health_checks(slot_name=candidate_slot)
             if result["passed"]:
+                print(f"os-customization-check: candidate slot {candidate_slot} passed health checks", file=sys.stderr)
                 manager.commit()
                 return 0
 
-            manager.rollback()
+            failed_checks = [check for check in result["checks"] if not check["passed"]]
+            rollback(
+                manager,
+                f"candidate slot {candidate_slot} failed health checks: "
+                f"{json.dumps(failed_checks, sort_keys=True)}",
+            )
             reboot_if_requested()
             return 1
     except (CustomizationError, subprocess.CalledProcessError) as exc:

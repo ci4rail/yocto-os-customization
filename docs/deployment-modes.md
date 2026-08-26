@@ -2,15 +2,21 @@
 
 The test deploy helper is [scripts/deploy-test-machine.sh](../scripts/deploy-test-machine.sh).
 
-Default mode:
+Production/rootfs mode:
 
-1. Stage tools under `/data/os-customization-tools`.
+1. Install tools below `/usr` and `/sbin`.
 2. Optionally install and enable the systemd units.
-3. Do not modify `/sbin/init`.
+3. Do not modify `/sbin/init` unless `--activate-init-wrapper` is supplied.
 
-Rootfs staging mode:
+Development staging mode:
 
-Run `deploy-test-machine.sh --rootfs-stage` to copy files into `/usr` and `/sbin` on the target root filesystem while leaving the active init path unchanged.
+Without `--rootfs-stage`, `deploy-test-machine.sh` stages tools below the
+configurable `TARGET_PREFIX` (default `/data/os-customization-tools`). This
+mode is for development only: production runtime helpers do not search that
+location for Python modules.
+
+Run `deploy-test-machine.sh --rootfs-stage` to install the production paths in
+`/usr` and `/sbin` while leaving the active init path unchanged.
 
 Live init switch:
 

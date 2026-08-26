@@ -4,7 +4,7 @@ set -eu
 
 TARGET_HOST=${TARGET_HOST:-}
 TARGET_USER=${TARGET_USER:-root}
-TARGET_PREFIX=${TARGET_PREFIX:-/data/os-customization-tools}
+TARGET_PREFIX=${TARGET_PREFIX:-/usr}
 TARGET_ROOT=${TARGET_ROOT:-/data/os-customization}
 PAYLOAD_ROOT=${PAYLOAD_ROOT:-/data/os-customization-e2e}
 SSH=${SSH:-ssh}

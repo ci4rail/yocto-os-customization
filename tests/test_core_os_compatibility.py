@@ -204,12 +204,13 @@ class StatusVersionTests(unittest.TestCase):
             status["candidate_state"] = "pending"
             manager.write_status(status)
 
-            rolled_back = manager.rollback()
+            rolled_back = manager.rollback(reason="health check #1 failed")
 
             self.assertIsNone(rolled_back["active_slot"])
             self.assertIsNone(rolled_back["last_good_slot"])
             self.assertIsNone(rolled_back["candidate_slot"])
             self.assertEqual(rolled_back["candidate_state"], "rolled-back")
+            self.assertEqual(rolled_back["rollback_reason"], "health check #1 failed")
 
 
 class FactoryInstallTests(unittest.TestCase):

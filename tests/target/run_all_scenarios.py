@@ -13,6 +13,7 @@ SCENARIOS = [
     "run_scenario_02_fallback_to_last.py",
     "run_scenario_03_deactivate_incompatible.py",
     "run_scenario_04_factory_reset.py",
+    "run_scenario_05_install_service.py",
 ]
 
 
