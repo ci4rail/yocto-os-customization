@@ -436,7 +436,7 @@ def main() -> int:
                     args.target_host,
                     args.target_user,
                     target_password,
-                    "mount -o remount,rw / && systemctl disable --now os-customization-check.service os-customization-factory-reset.service 2>/dev/null || true && systemctl daemon-reload && mount -o remount,ro /",
+                    "mount -o remount,rw / && systemctl disable --now os-customization-check.timer os-customization-check.service os-customization-factory-reset.service 2>/dev/null || true && systemctl daemon-reload && mount -o remount,ro /",
                     check=False,
                 )
                 print("stock init restored after successful smoke activation")

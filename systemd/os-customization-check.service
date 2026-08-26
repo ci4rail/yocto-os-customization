@@ -1,8 +1,10 @@
 [Unit]
 Description=Validate OS customization candidate
 DefaultDependencies=yes
-After=network-online.target docker.service chronyd.service sshd.service
-Wants=network-online.target
+# This service is started by os-customization-check.timer rather than by
+# multi-user.target.  Consequently it can wait until all units pulled in by
+# multi-user.target have completed their start jobs without an ordering cycle.
+After=multi-user.target
 ConditionPathExists=/data/os-customization/status.json
 
 [Service]
@@ -11,6 +13,3 @@ Environment=PYTHONPATH=/usr/lib/os-customization/python
 Environment=OS_CUSTOMIZATION_ROOT=/data/os-customization
 Environment=OS_CUSTOMIZATION_BOOT_SELECTION_PATH=/run/os-customization/boot-selection.json
 ExecStart=/usr/libexec/os-customization-check
-
-[Install]
-WantedBy=multi-user.target

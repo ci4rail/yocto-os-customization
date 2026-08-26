@@ -284,13 +284,13 @@ class TargetContext:
         self.run_remote(f"test -x {shlex.quote(self.os_customization_set)}", label="cli-present")
         self.run_remote(f"test -f {shlex.quote(BOOT_SELECTION_PATH)}", label="boot-integration")
         service_state = self.run_remote(
-            "systemctl is-enabled os-customization-check.service",
+            "systemctl is-enabled os-customization-check.timer",
             check=False,
-            label="health-service-enabled",
+            label="health-timer-enabled",
         )
         self.assert_true(
             service_state.returncode == 0,
-            "os-customization-check.service must be enabled before running target scenarios",
+            "os-customization-check.timer must be enabled before running target scenarios",
         )
 
     def create_payload(
@@ -337,9 +337,9 @@ class TargetContext:
 
     def health_service_enabled(self) -> bool:
         result = self.run_remote(
-            "systemctl is-enabled os-customization-check.service",
+            "systemctl is-enabled os-customization-check.timer",
             check=False,
-            label="health-service-enabled",
+            label="health-timer-enabled",
         )
         return result.returncode == 0
 
@@ -364,7 +364,7 @@ class TargetContext:
         if not status.get("candidate_slot"):
             return None
         if not self.health_service_enabled():
-            return "os-customization-check.service is disabled after reboot, so the candidate cannot be committed or rolled back"
+            return "os-customization-check.timer is disabled after reboot, so the candidate cannot be committed or rolled back"
         active_state = self.health_service_active_state()
         journal = self.health_service_boot_journal()
         if active_state in {"inactive", "failed", "unknown"} and not journal:

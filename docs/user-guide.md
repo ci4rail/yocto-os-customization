@@ -498,8 +498,10 @@ Its key environment overrides include `DATA_DEVICE`, `DATA_MOUNT`,
 
 ### `libexec/os-customization-check` and its systemd service
 
-`os-customization-check.service` runs after `multi-user.target` and
-`network-online.target`. When a candidate is pending, its helper:
+`os-customization-check.timer` queues `os-customization-check.service` during
+boot. The service runs after `multi-user.target`, so services pulled in by that
+target have completed their start jobs before manifest health checks run. When
+a candidate is pending, its helper:
 
 1. Verifies that the early boot marker says this candidate was actually
    selected.

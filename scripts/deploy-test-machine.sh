@@ -162,16 +162,18 @@ if [ "$skip_services" -eq 0 ]; then
     fi
     sed "s#/usr/lib/os-customization/python#$service_python_prefix#g; s#/usr/libexec#$service_libexec_prefix#g; s#/usr/bin#$service_bin_prefix#g" \
         "$REPO_ROOT/systemd/os-customization-check.service" > "$tmpdir/os-customization-check.service"
+    cp "$REPO_ROOT/systemd/os-customization-check.timer" "$tmpdir/os-customization-check.timer"
     sed "s#/usr/lib/os-customization/python#$service_python_prefix#g; s#/usr/libexec#$service_libexec_prefix#g; s#/usr/bin#$service_bin_prefix#g" \
         "$REPO_ROOT/systemd/os-customization-factory-reset.service" > "$tmpdir/os-customization-factory-reset.service"
     $SSH "$remote" "mkdir -p $service_etc_root/systemd/system"
     $SCP "$tmpdir/os-customization-check.service" "$remote:$service_etc_root/systemd/system/os-customization-check.service"
+    $SCP "$tmpdir/os-customization-check.timer" "$remote:$service_etc_root/systemd/system/os-customization-check.timer"
     $SCP "$tmpdir/os-customization-factory-reset.service" "$remote:$service_etc_root/systemd/system/os-customization-factory-reset.service"
     if [ "$activate_services" -eq 1 ]; then
         if [ "$service_etc_root" = /etc ]; then
-            $SSH "$remote" "systemctl daemon-reload && systemctl enable os-customization-check.service os-customization-factory-reset.service"
+            $SSH "$remote" "systemctl disable os-customization-check.service || true; systemctl daemon-reload && systemctl enable os-customization-check.timer os-customization-factory-reset.service"
         else
-            $SSH "$remote" "set -eu; mkdir -p $service_etc_root/systemd/system/multi-user.target.wants && ln -snf ../os-customization-check.service $service_etc_root/systemd/system/multi-user.target.wants/os-customization-check.service && ln -snf ../os-customization-factory-reset.service $service_etc_root/systemd/system/multi-user.target.wants/os-customization-factory-reset.service && systemctl daemon-reload"
+            $SSH "$remote" "set -eu; rm -f $service_etc_root/systemd/system/multi-user.target.wants/os-customization-check.service; mkdir -p $service_etc_root/systemd/system/timers.target.wants $service_etc_root/systemd/system/multi-user.target.wants && ln -snf ../os-customization-check.timer $service_etc_root/systemd/system/timers.target.wants/os-customization-check.timer && ln -snf ../os-customization-factory-reset.service $service_etc_root/systemd/system/multi-user.target.wants/os-customization-factory-reset.service && systemctl daemon-reload"
         fi
     fi
 fi
