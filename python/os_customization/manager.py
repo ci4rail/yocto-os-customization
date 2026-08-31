@@ -439,7 +439,7 @@ class CustomizationManager:
             return None
 
         # Example: Moducop-CPU01_Standard-Image_v2.11.0.51609d8.20260513.1047
-        match = re.search(r"(?:^|_)v(\d+\.\d+\.\d+)(?=\.|\s|$)", issue)
+        match = re.search(r"(?:^|_)v(\d+\.\d+\.\d+)(?=[.+\s]|$)", issue)
         if not match:
             return None
         return f"v{match.group(1)}"

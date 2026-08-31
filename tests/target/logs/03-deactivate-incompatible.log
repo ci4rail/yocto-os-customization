@@ -1,477 +1,275 @@
-[2026-08-23T19:45:17Z] SCENARIO 03: Deactivate a last-known-good customization when Core OS compatibility changes
-[2026-08-23T19:45:17Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> true
-[2026-08-23T19:45:18Z] RESULT connectivity: exit=0
-[2026-08-23T19:45:18Z] COMMAND cli-present: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'test -x /usr/bin/os-customization-set'
-[2026-08-23T19:45:19Z] RESULT cli-present: exit=0
-[2026-08-23T19:45:19Z] COMMAND boot-integration: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'test -f /run/os-customization/boot-selection.json'
-[2026-08-23T19:45:19Z] RESULT boot-integration: exit=0
-[2026-08-23T19:45:19Z] COMMAND health-service-enabled: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'systemctl is-enabled os-customization-check.service'
-[2026-08-23T19:45:20Z] STDOUT health-service-enabled:
+[2026-08-26T19:46:12Z] SCENARIO 03: Deactivate a last-known-good customization when Core OS compatibility changes
+[2026-08-26T19:46:12Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> true
+[2026-08-26T19:46:13Z] RESULT connectivity: exit=0
+[2026-08-26T19:46:13Z] COMMAND cli-present: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -x /usr/bin/os-customization-set'
+[2026-08-26T19:46:13Z] RESULT cli-present: exit=0
+[2026-08-26T19:46:13Z] COMMAND boot-integration: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -f /run/os-customization/boot-selection.json'
+[2026-08-26T19:46:14Z] RESULT boot-integration: exit=0
+[2026-08-26T19:46:14Z] COMMAND health-timer-enabled: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled os-customization-check.timer'
+[2026-08-26T19:46:15Z] STDOUT health-timer-enabled:
 enabled
-[2026-08-23T19:45:20Z] RESULT health-service-enabled: exit=0
-[2026-08-23T19:45:20Z] ACTION factory reset with state wipe
-[2026-08-23T19:45:20Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:45:21Z] STDOUT boot-id:
-f418b2ce-b127-4707-9e4a-fb12128ccd1c
-[2026-08-23T19:45:21Z] RESULT boot-id: exit=0
-[2026-08-23T19:45:21Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
-[2026-08-23T19:45:22Z] STDOUT factory-reset:
+[2026-08-26T19:46:15Z] RESULT health-timer-enabled: exit=0
+[2026-08-26T19:46:15Z] ACTION factory reset with state wipe
+[2026-08-26T19:46:15Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:15Z] STDOUT boot-id:
+f4843ca4-3ece-43c5-a5fe-e07a5eec7b34
+[2026-08-26T19:46:15Z] RESULT boot-id: exit=0
+[2026-08-26T19:46:15Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-08-26T19:46:17Z] STDOUT factory-reset:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "last-good-compatible",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:45:22Z] RESULT factory-reset: exit=0
-[2026-08-23T19:45:22Z] ACTION reboot: apply factory reset
-[2026-08-23T19:45:22Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-23T19:45:23Z] RESULT reboot: exit=0
-[2026-08-23T19:45:23Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:45:24Z] STDERR boot-id:
+[2026-08-26T19:46:17Z] RESULT factory-reset: exit=0
+[2026-08-26T19:46:17Z] ACTION reboot: apply factory reset
+[2026-08-26T19:46:17Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-08-26T19:46:17Z] RESULT reboot: exit=0
+[2026-08-26T19:46:17Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:19Z] STDERR boot-id:
 kex_exchange_identification: read: Connection reset by peer
-[2026-08-23T19:45:24Z] RESULT boot-id: exit=255
-[2026-08-23T19:45:26Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:45:26Z] STDERR boot-id:
+[2026-08-26T19:46:19Z] RESULT boot-id: exit=255
+[2026-08-26T19:46:21Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:21Z] STDERR boot-id:
 ssh: connect to host <target> port 22: Connection refused
-[2026-08-23T19:45:26Z] RESULT boot-id: exit=255
-[2026-08-23T19:45:28Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:04Z] STDOUT boot-id:
-59aecb6a-c06d-4bed-aa07-802bf34fbaad
-[2026-08-23T19:46:04Z] RESULT boot-id: exit=0
-[2026-08-23T19:46:04Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:05Z] STDOUT status:
+[2026-08-26T19:46:21Z] RESULT boot-id: exit=255
+[2026-08-26T19:46:23Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:33Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:46:33Z] STDERR boot-id:
+ssh: connect to host <target> port 22: Connection timed out
+[2026-08-26T19:46:33Z] RESULT boot-id: exit=124
+[2026-08-26T19:46:35Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:44Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:46:44Z] RESULT boot-id: exit=124
+[2026-08-26T19:46:46Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:48Z] STDOUT boot-id:
+52483eef-c670-401d-a7b1-ba2ecfb882f2
+[2026-08-26T19:46:48Z] RESULT boot-id: exit=0
+[2026-08-26T19:46:48Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:46:49Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:46:05Z] RESULT status: exit=0
-[2026-08-23T19:46:05Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:06Z] STDOUT status:
+[2026-08-26T19:46:49Z] RESULT status: exit=0
+[2026-08-26T19:46:49Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:46:50Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:46:06Z] RESULT status: exit=0
-[2026-08-23T19:46:06Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:08Z] STDOUT status:
+[2026-08-26T19:46:50Z] RESULT status: exit=0
+[2026-08-26T19:46:50Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:46:52Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:46:08Z] RESULT status: exit=0
-[2026-08-23T19:46:08Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:09Z] STDOUT status:
+[2026-08-26T19:46:52Z] RESULT status: exit=0
+[2026-08-26T19:46:52Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:46:53Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:46:09Z] RESULT status: exit=0
-[2026-08-23T19:46:09Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-factory-1.0.0", "format_version": 1, "last_good_slot": null, "last_good_version": null}
-[2026-08-23T19:46:09Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/hosts'
-[2026-08-23T19:46:10Z] STDOUT read /etc/hosts:
-127.0.0.1 localhost
-127.0.0.1 target-test-04-factory
-[2026-08-23T19:46:10Z] RESULT read /etc/hosts: exit=0
-[2026-08-23T19:46:10Z] COMMAND read /etc/issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/issue'
-[2026-08-23T19:46:10Z] STDOUT read /etc/issue:
-TDX Wayland with XWayland 7.1.0-devel-20260513110617+build.0 (scarthgap) \n \l
-Moducop-CPU01_Standard-Image_v2.11.0.51609d8.20260513.1047
+[2026-08-26T19:46:53Z] RESULT status: exit=0
+[2026-08-26T19:46:53Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}
+[2026-08-26T19:46:53Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
+[2026-08-26T19:46:54Z] STDOUT read /etc/hosts:
+127.0.0.1	localhost
 
-[2026-08-23T19:46:10Z] RESULT read /etc/issue: exit=0
-[2026-08-23T19:46:10Z] COMMAND read /etc/issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/issue'
-[2026-08-23T19:46:11Z] STDOUT read /etc/issue:
-TDX Wayland with XWayland 7.1.0-devel-20260513110617+build.0 (scarthgap) \n \l
-Moducop-CPU01_Standard-Image_v2.11.0.51609d8.20260513.1047
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+[2026-08-26T19:46:54Z] RESULT read /etc/hosts: exit=0
+[2026-08-26T19:46:54Z] COMMAND read /etc/issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/issue'
+[2026-08-26T19:46:54Z] STDOUT read /etc/issue:
+TDX Wayland with XWayland 7.1.0-devel-20260825155153+build.0 (scarthgap) \n \l
+Moducop-CPU01_Standard-Image_dirty_v2.12.0+8.oss-clearing.0f6d0a9.klaus.20260825.1751
 
-[2026-08-23T19:46:11Z] RESULT read /etc/issue: exit=0
-[2026-08-23T19:46:11Z] COMMAND prepare-upload-dir: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'rm -rf /tmp/os-customization-target-tests/03-compatible && mkdir -p /tmp/os-customization-target-tests'
-[2026-08-23T19:46:12Z] RESULT prepare-upload-dir: exit=0
-[2026-08-23T19:46:12Z] COMMAND upload compatible: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -r /tmp/03-deactivate-incompatible-9i764diz root@<target>:/tmp/os-customization-target-tests/03-compatible
-[2026-08-23T19:46:13Z] RESULT upload compatible: exit=0
-[2026-08-23T19:46:13Z] COMMAND install compatible: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization install /tmp/os-customization-target-tests/03-compatible'
-[2026-08-23T19:46:14Z] STDOUT install compatible:
+[2026-08-26T19:46:54Z] RESULT read /etc/issue: exit=0
+[2026-08-26T19:46:54Z] COMMAND read /etc/issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/issue'
+[2026-08-26T19:46:55Z] STDOUT read /etc/issue:
+TDX Wayland with XWayland 7.1.0-devel-20260825155153+build.0 (scarthgap) \n \l
+Moducop-CPU01_Standard-Image_dirty_v2.12.0+8.oss-clearing.0f6d0a9.klaus.20260825.1751
+
+[2026-08-26T19:46:55Z] RESULT read /etc/issue: exit=0
+[2026-08-26T19:46:55Z] SCENARIO 03 FAIL: could not determine current Core OS version from /etc/issue
+[2026-08-26T19:46:55Z] COMMAND upload restore-issue: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 /tmp/03-rootfs-9hfk8wjl/issue root@<target>:/tmp/issue
+[2026-08-26T19:46:57Z] RESULT upload restore-issue: exit=0
+[2026-08-26T19:46:57Z] COMMAND write restore-issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'set -eu; if grep -Fqs '"'"' /run/rootfs-etc '"'"' /proc/mounts && [ -e /run/rootfs-etc/issue ]; then mount -o remount,rw /; mount -o remount,bind,rw /run/rootfs-etc; cp /tmp/issue /run/rootfs-etc/issue; mount -o remount,bind,ro /run/rootfs-etc; mount -o remount,ro /; else mount -o remount,rw /; cp /tmp/issue /etc/issue; mount -o remount,ro /; fi; rm -f /tmp/issue'
+[2026-08-26T19:46:58Z] RESULT write restore-issue: exit=0
+[2026-08-26T19:46:58Z] ACTION factory reset with state wipe
+[2026-08-26T19:46:58Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:46:58Z] STDOUT boot-id:
+52483eef-c670-401d-a7b1-ba2ecfb882f2
+[2026-08-26T19:46:58Z] RESULT boot-id: exit=0
+[2026-08-26T19:46:58Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-08-26T19:47:00Z] STDOUT factory-reset:
 {
-  "slot": "A",
-  "status": {
-    "active_slot": null,
-    "active_version": null,
-    "boot_id_last_seen": "3f048e12-f9e0-48a4-889d-9bbde8064b9d",
-    "boot_selection_reason": "no-user-customization",
-    "candidate_attempts": 0,
-    "candidate_slot": "A",
-    "candidate_state": "pending",
-    "candidate_version": "target-test-03-compatible-1.0.0",
-    "factory_version": "target-test-04-factory-1.0.0",
-    "format_version": 1,
-    "last_good_slot": null,
-    "last_good_version": null
-  },
-  "version": "target-test-03-compatible-1.0.0"
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
+  "boot_selection_reason": "no-user-customization",
+  "candidate_attempts": 0,
+  "candidate_slot": null,
+  "candidate_state": null,
+  "candidate_version": null,
+  "factory_version": null,
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:46:14Z] RESULT install compatible: exit=0
-[2026-08-23T19:46:14Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:15Z] STDOUT boot-id:
-59aecb6a-c06d-4bed-aa07-802bf34fbaad
-[2026-08-23T19:46:15Z] RESULT boot-id: exit=0
-[2026-08-23T19:46:15Z] ACTION reboot: commit scenario 03 compatible payload
-[2026-08-23T19:46:15Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-23T19:46:16Z] RESULT reboot: exit=0
-[2026-08-23T19:46:16Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:17Z] STDERR boot-id:
+[2026-08-26T19:47:00Z] RESULT factory-reset: exit=0
+[2026-08-26T19:47:00Z] ACTION reboot: apply factory reset
+[2026-08-26T19:47:00Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-08-26T19:47:00Z] RESULT reboot: exit=0
+[2026-08-26T19:47:00Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:47:02Z] STDERR boot-id:
 kex_exchange_identification: read: Connection reset by peer
-[2026-08-23T19:46:17Z] RESULT boot-id: exit=255
-[2026-08-23T19:46:19Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:19Z] STDERR boot-id:
+[2026-08-26T19:47:02Z] RESULT boot-id: exit=255
+[2026-08-26T19:47:04Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:47:04Z] STDERR boot-id:
 ssh: connect to host <target> port 22: Connection refused
-[2026-08-23T19:46:19Z] RESULT boot-id: exit=255
-[2026-08-23T19:46:21Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:43Z] STDERR boot-id:
-ssh: connect to host <target> port 22: No route to host
-[2026-08-23T19:46:43Z] RESULT boot-id: exit=255
-[2026-08-23T19:46:45Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:49Z] STDOUT boot-id:
-447c2505-153b-49f0-92c4-8fb98d577e3f
-[2026-08-23T19:46:49Z] RESULT boot-id: exit=0
-[2026-08-23T19:46:49Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/hosts'
-[2026-08-23T19:46:49Z] STDOUT read /etc/hosts:
-127.0.0.1 localhost
-127.0.0.1 target-test-03-compatible
-[2026-08-23T19:46:49Z] RESULT read /etc/hosts: exit=0
-[2026-08-23T19:46:49Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:50Z] STDOUT status:
+[2026-08-26T19:47:04Z] RESULT boot-id: exit=255
+[2026-08-26T19:47:06Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:47:15Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:47:15Z] RESULT boot-id: exit=124
+[2026-08-26T19:47:17Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:47:27Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-08-26T19:47:27Z] RESULT boot-id: exit=124
+[2026-08-26T19:47:29Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-08-26T19:47:31Z] STDOUT boot-id:
+f34d91fc-a006-4708-8db4-ca7d590626a1
+[2026-08-26T19:47:31Z] RESULT boot-id: exit=0
+[2026-08-26T19:47:31Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:47:32Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-  "boot_selection_reason": "candidate-compatible",
-  "candidate_attempts": 1,
-  "candidate_slot": "A",
-  "candidate_state": "pending",
-  "candidate_version": "target-test-03-compatible-1.0.0",
-  "factory_version": "target-test-04-factory-1.0.0",
-  "format_version": 1,
-  "last_good_slot": null,
-  "last_good_version": null
-}
-[2026-08-23T19:46:50Z] RESULT status: exit=0
-[2026-08-23T19:46:50Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:52Z] STDOUT status:
-{
-  "active_slot": null,
-  "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-  "boot_selection_reason": "candidate-compatible",
-  "candidate_attempts": 1,
-  "candidate_slot": "A",
-  "candidate_state": "pending",
-  "candidate_version": "target-test-03-compatible-1.0.0",
-  "factory_version": "target-test-04-factory-1.0.0",
-  "format_version": 1,
-  "last_good_slot": null,
-  "last_good_version": null
-}
-[2026-08-23T19:46:52Z] RESULT status: exit=0
-[2026-08-23T19:46:54Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:46:54Z] STDOUT boot-id:
-447c2505-153b-49f0-92c4-8fb98d577e3f
-[2026-08-23T19:46:54Z] RESULT boot-id: exit=0
-[2026-08-23T19:46:54Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/hosts'
-[2026-08-23T19:46:55Z] STDOUT read /etc/hosts:
-127.0.0.1 localhost
-127.0.0.1 target-test-03-compatible
-[2026-08-23T19:46:55Z] RESULT read /etc/hosts: exit=0
-[2026-08-23T19:46:55Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:56Z] STDOUT status:
-{
-  "active_slot": "A",
-  "active_version": "target-test-03-compatible-1.0.0",
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-  "boot_selection_reason": "candidate-compatible",
-  "candidate_attempts": 0,
-  "candidate_slot": null,
-  "candidate_state": null,
-  "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
-  "format_version": 1,
-  "last_good_slot": "A",
-  "last_good_version": "target-test-03-compatible-1.0.0"
-}
-[2026-08-23T19:46:56Z] RESULT status: exit=0
-[2026-08-23T19:46:56Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:46:57Z] STDOUT status:
-{
-  "active_slot": "A",
-  "active_version": "target-test-03-compatible-1.0.0",
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-  "boot_selection_reason": "candidate-compatible",
-  "candidate_attempts": 0,
-  "candidate_slot": null,
-  "candidate_state": null,
-  "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
-  "format_version": 1,
-  "last_good_slot": "A",
-  "last_good_version": "target-test-03-compatible-1.0.0"
-}
-[2026-08-23T19:46:57Z] RESULT status: exit=0
-[2026-08-23T19:46:57Z] WAIT satisfied: scenario 03 compatible payload commit: {"active_slot": "A", "active_version": "target-test-03-compatible-1.0.0", "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f", "boot_selection_reason": "candidate-compatible", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-factory-1.0.0", "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-03-compatible-1.0.0"}
-[2026-08-23T19:46:57Z] COMMAND upload scenario-03-issue: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/03-rootfs-k6dnv3e1/issue root@<target>:/tmp/issue
-[2026-08-23T19:46:58Z] RESULT upload scenario-03-issue: exit=0
-[2026-08-23T19:46:58Z] COMMAND write scenario-03-issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'set -eu; if grep -Fqs '"'"' /run/rootfs-etc '"'"' /proc/mounts && [ -e /run/rootfs-etc/issue ]; then mount -o remount,rw /; mount -o remount,bind,rw /run/rootfs-etc; cp /tmp/issue /run/rootfs-etc/issue; mount -o remount,bind,ro /run/rootfs-etc; mount -o remount,ro /; else mount -o remount,rw /; cp /tmp/issue /etc/issue; mount -o remount,ro /; fi; rm -f /tmp/issue'
-[2026-08-23T19:46:59Z] RESULT write scenario-03-issue: exit=0
-[2026-08-23T19:46:59Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:00Z] STDOUT boot-id:
-447c2505-153b-49f0-92c4-8fb98d577e3f
-[2026-08-23T19:47:00Z] RESULT boot-id: exit=0
-[2026-08-23T19:47:00Z] ACTION reboot: deactivate incompatible scenario 03 payload
-[2026-08-23T19:47:00Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-23T19:47:00Z] RESULT reboot: exit=0
-[2026-08-23T19:47:00Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:02Z] STDERR boot-id:
-kex_exchange_identification: read: Connection reset by peer
-[2026-08-23T19:47:02Z] RESULT boot-id: exit=255
-[2026-08-23T19:47:04Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:04Z] STDERR boot-id:
-ssh: connect to host <target> port 22: Connection refused
-[2026-08-23T19:47:04Z] RESULT boot-id: exit=255
-[2026-08-23T19:47:06Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:42Z] STDOUT boot-id:
-e0e9257d-9847-446a-a791-e79bd09bd75c
-[2026-08-23T19:47:42Z] RESULT boot-id: exit=0
-[2026-08-23T19:47:42Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /etc/hosts'
-[2026-08-23T19:47:43Z] STDOUT read /etc/hosts:
-127.0.0.1 localhost
-127.0.0.1 target-test-04-factory
-[2026-08-23T19:47:43Z] RESULT read /etc/hosts: exit=0
-[2026-08-23T19:47:43Z] COMMAND boot-selection: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /run/os-customization/boot-selection.json'
-[2026-08-23T19:47:43Z] STDOUT boot-selection:
-{
-  "factory_path": "/data/os-customization/factory",
-  "selected_slot": null,
-  "selection_reason": "last-good-incompatible-core-os",
-  "state_etc_path": "/data/os-customization/state/etc",
-  "state_work_etc_path": "/data/os-customization/state-work/etc",
-  "status": {
-    "active_slot": "A",
-    "active_version": "target-test-03-compatible-1.0.0",
-    "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-    "boot_selection_reason": "last-good-incompatible-core-os",
-    "candidate_attempts": 0,
-    "candidate_slot": null,
-    "candidate_state": null,
-    "candidate_version": null,
-    "factory_version": "target-test-04-factory-1.0.0",
-    "format_version": 1,
-    "last_good_slot": "A",
-    "last_good_version": "target-test-03-compatible-1.0.0"
-  }
-}
-[2026-08-23T19:47:43Z] RESULT boot-selection: exit=0
-[2026-08-23T19:47:43Z] COMMAND boot-selection: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /run/os-customization/boot-selection.json'
-[2026-08-23T19:47:44Z] STDOUT boot-selection:
-{
-  "factory_path": "/data/os-customization/factory",
-  "selected_slot": null,
-  "selection_reason": "last-good-incompatible-core-os",
-  "state_etc_path": "/data/os-customization/state/etc",
-  "state_work_etc_path": "/data/os-customization/state-work/etc",
-  "status": {
-    "active_slot": "A",
-    "active_version": "target-test-03-compatible-1.0.0",
-    "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-    "boot_selection_reason": "last-good-incompatible-core-os",
-    "candidate_attempts": 0,
-    "candidate_slot": null,
-    "candidate_state": null,
-    "candidate_version": null,
-    "factory_version": "target-test-04-factory-1.0.0",
-    "format_version": 1,
-    "last_good_slot": "A",
-    "last_good_version": "target-test-03-compatible-1.0.0"
-  }
-}
-[2026-08-23T19:47:44Z] RESULT boot-selection: exit=0
-[2026-08-23T19:47:44Z] COMMAND boot-selection: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /run/os-customization/boot-selection.json'
-[2026-08-23T19:47:45Z] STDOUT boot-selection:
-{
-  "factory_path": "/data/os-customization/factory",
-  "selected_slot": null,
-  "selection_reason": "last-good-incompatible-core-os",
-  "state_etc_path": "/data/os-customization/state/etc",
-  "state_work_etc_path": "/data/os-customization/state-work/etc",
-  "status": {
-    "active_slot": "A",
-    "active_version": "target-test-03-compatible-1.0.0",
-    "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-    "boot_selection_reason": "last-good-incompatible-core-os",
-    "candidate_attempts": 0,
-    "candidate_slot": null,
-    "candidate_state": null,
-    "candidate_version": null,
-    "factory_version": "target-test-04-factory-1.0.0",
-    "format_version": 1,
-    "last_good_slot": "A",
-    "last_good_version": "target-test-03-compatible-1.0.0"
-  }
-}
-[2026-08-23T19:47:45Z] RESULT boot-selection: exit=0
-[2026-08-23T19:47:45Z] WAIT satisfied: scenario 03 incompatibility deactivation: {"factory_path": "/data/os-customization/factory", "selected_slot": null, "selection_reason": "last-good-incompatible-core-os", "state_etc_path": "/data/os-customization/state/etc", "state_work_etc_path": "/data/os-customization/state-work/etc", "status": {"active_slot": "A", "active_version": "target-test-03-compatible-1.0.0", "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f", "boot_selection_reason": "last-good-incompatible-core-os", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-factory-1.0.0", "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-03-compatible-1.0.0"}}
-[2026-08-23T19:47:45Z] SCENARIO 03 PASS
-[2026-08-23T19:47:45Z] COMMAND upload restore-issue: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/03-rootfs-y09po2z5/issue root@<target>:/tmp/issue
-[2026-08-23T19:47:46Z] RESULT upload restore-issue: exit=0
-[2026-08-23T19:47:46Z] COMMAND write restore-issue: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'set -eu; if grep -Fqs '"'"' /run/rootfs-etc '"'"' /proc/mounts && [ -e /run/rootfs-etc/issue ]; then mount -o remount,rw /; mount -o remount,bind,rw /run/rootfs-etc; cp /tmp/issue /run/rootfs-etc/issue; mount -o remount,bind,ro /run/rootfs-etc; mount -o remount,ro /; else mount -o remount,rw /; cp /tmp/issue /etc/issue; mount -o remount,ro /; fi; rm -f /tmp/issue'
-[2026-08-23T19:47:46Z] RESULT write restore-issue: exit=0
-[2026-08-23T19:47:46Z] ACTION factory reset with state wipe
-[2026-08-23T19:47:46Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:47Z] STDOUT boot-id:
-e0e9257d-9847-446a-a791-e79bd09bd75c
-[2026-08-23T19:47:47Z] RESULT boot-id: exit=0
-[2026-08-23T19:47:47Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
-[2026-08-23T19:47:48Z] STDOUT factory-reset:
-{
-  "active_slot": null,
-  "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
-  "boot_selection_reason": "last-good-incompatible-core-os",
-  "candidate_attempts": 0,
-  "candidate_slot": null,
-  "candidate_state": null,
-  "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
-  "format_version": 1,
-  "last_good_slot": null,
-  "last_good_version": null
-}
-[2026-08-23T19:47:48Z] RESULT factory-reset: exit=0
-[2026-08-23T19:47:48Z] ACTION reboot: apply factory reset
-[2026-08-23T19:47:48Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-23T19:47:49Z] RESULT reboot: exit=0
-[2026-08-23T19:47:49Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:50Z] STDERR boot-id:
-kex_exchange_identification: read: Connection reset by peer
-[2026-08-23T19:47:50Z] RESULT boot-id: exit=255
-[2026-08-23T19:47:52Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:47:52Z] STDERR boot-id:
-kex_exchange_identification: read: Connection reset by peer
-[2026-08-23T19:47:52Z] RESULT boot-id: exit=255
-[2026-08-23T19:47:54Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-23T19:48:30Z] STDOUT boot-id:
-878767d1-39c3-4d78-863c-b2194fe45c52
-[2026-08-23T19:48:30Z] RESULT boot-id: exit=0
-[2026-08-23T19:48:30Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:48:32Z] STDOUT status:
-{
-  "active_slot": null,
-  "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:48:32Z] RESULT status: exit=0
-[2026-08-23T19:48:32Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:48:33Z] STDOUT status:
+[2026-08-26T19:47:32Z] RESULT status: exit=0
+[2026-08-26T19:47:32Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:47:34Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:48:33Z] RESULT status: exit=0
-[2026-08-23T19:48:33Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:48:34Z] STDOUT status:
+[2026-08-26T19:47:34Z] RESULT status: exit=0
+[2026-08-26T19:47:34Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:47:35Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:48:34Z] RESULT status: exit=0
-[2026-08-23T19:48:34Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-23T19:48:35Z] STDOUT status:
+[2026-08-26T19:47:35Z] RESULT status: exit=0
+[2026-08-26T19:47:35Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-08-26T19:47:36Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f",
+  "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": "target-test-04-factory-1.0.0",
+  "factory_version": null,
   "format_version": 1,
   "last_good_slot": null,
-  "last_good_version": null
+  "last_good_version": null,
+  "rollback_reason": null
 }
-[2026-08-23T19:48:35Z] RESULT status: exit=0
-[2026-08-23T19:48:35Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "447c2505-153b-49f0-92c4-8fb98d577e3f", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-factory-1.0.0", "format_version": 1, "last_good_slot": null, "last_good_version": null}
+[2026-08-26T19:47:36Z] RESULT status: exit=0
+[2026-08-26T19:47:36Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "be7d115f-181c-4088-b0ad-300834423343", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}

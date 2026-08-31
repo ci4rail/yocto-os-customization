@@ -23,7 +23,7 @@ DEFAULT_ROOT = "/data/os-customization"
 DEFAULT_REMOTE_PAYLOAD_ROOT = "/tmp/os-customization-target-tests"
 DEFAULT_OS_CUSTOMIZATION_SET = "/usr/bin/os-customization-set"
 BOOT_SELECTION_PATH = "/run/os-customization/boot-selection.json"
-CORE_OS_VERSION_PATTERN = re.compile(r"(?:^|_)v(\d+\.\d+\.\d+)(?=\.|\s|$)")
+CORE_OS_VERSION_PATTERN = re.compile(r"(?:^|_)v(\d+\.\d+\.\d+)(?=[.+\s]|$)")
 DEFAULT_SSH_TIMEOUT = 20.0
 DEFAULT_SCP_TIMEOUT = 120.0
 DEFAULT_BOOT_PROBE_TIMEOUT = 10.0

@@ -38,6 +38,18 @@ class CoreOsCompatibilityTests(unittest.TestCase):
 
             self.assertEqual(manager.current_core_os_version(), "v2.11.0")
 
+    def test_reads_semantic_version_with_build_metadata_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            issue = root / "issue"
+            issue.write_text(
+                "Moducop-CPU01_Standard-Image_dirty_v2.12.0+8.oss-clearing.0f6d0a9\n",
+                encoding="utf-8",
+            )
+            manager = CustomizationManager(root=root / "state", issue_path=issue)
+
+            self.assertEqual(manager.current_core_os_version(), "v2.12.0")
+
     def test_rejects_incompatible_payload(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
