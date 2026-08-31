@@ -10,6 +10,24 @@ from os_customization.manager import CustomizationError, CustomizationManager
 
 
 class CoreOsCompatibilityTests(unittest.TestCase):
+    def test_production_layout_reuses_legacy_overlay_directories(self) -> None:
+        manager = CustomizationManager()
+
+        self.assertEqual(manager.state_etc_path, Path("/data/overlay-etc/upper"))
+        self.assertEqual(manager.state_work_etc_path, Path("/data/overlay-etc/work"))
+
+    def test_explicit_legacy_state_root_is_used_for_migration_tests(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            legacy_root = Path(temp_dir) / "overlay-etc"
+            manager = CustomizationManager(
+                root=Path(temp_dir) / "os-customization",
+                state_root=legacy_root,
+            )
+            manager.ensure_layout()
+
+            self.assertEqual(manager.state_etc_path, legacy_root / "upper")
+            self.assertEqual(manager.state_work_etc_path, legacy_root / "work")
+
     def _payload(self, root: Path, compatible_core_os: str) -> Path:
         payload = root / "payload"
         (payload / "etc").mkdir(parents=True)

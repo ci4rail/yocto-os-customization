@@ -51,11 +51,25 @@ The default persistent layout is:
 ├── factory/             factory manifest and etc/ tree
 ├── user-A/              one complete USER payload
 ├── user-B/              the other complete USER payload
-├── state/etc/           writable OverlayFS upper directory
-├── state-work/etc/      OverlayFS work directory
 ├── staging/             temporary installation workspace
 └── status.json          slot and candidate state
 ```
+
+The writable STATE layer deliberately remains at the location used by older
+images that predate `os-customization`:
+
+```text
+/data/overlay-etc/
+├── upper/               writable OverlayFS upper directory
+├── work/                OverlayFS work directory
+└── lower/               legacy bind-mount directory; no longer used
+```
+
+This preserves existing changes under `/etc` when such a device is upgraded to
+an image with `os-customization`: preinit reuses `upper` and `work` instead of
+creating a new empty STATE layer.  `upper` is STATE, so it has higher precedence
+than USER and FACTORY customizations.  A factory reset with `--wipe-state`
+clears this legacy STATE directory as well.
 
 ### Factory customization directory
 

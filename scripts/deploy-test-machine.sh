@@ -143,7 +143,14 @@ close_service_etc_ro() {
     service_etc_bind_rw_opened=0
 }
 
-$SSH "$remote" "mkdir -p $TARGET_PREFIX/bin $TARGET_PREFIX/lib/os-customization/python/os_customization $TARGET_PREFIX/libexec $TARGET_PREFIX/sbin /etc/systemd/system"
+$SSH "$remote" "mkdir -p $TARGET_PREFIX/bin $TARGET_PREFIX/lib/os-customization/python/os_customization $TARGET_PREFIX/libexec $TARGET_PREFIX/sbin"
+
+# Development staging intentionally uses the live /etc.  Rootfs staging must
+# never do so: when the init wrapper is active, /etc is the STATE OverlayFS
+# upper layer and files copied there would disappear on a state wipe.
+if [ "$rootfs_stage" -eq 0 ]; then
+    $SSH "$remote" "mkdir -p /etc/systemd/system"
+fi
 
 $SCP "$REPO_ROOT/bin/os-customization-set" "$remote:$TARGET_PREFIX/bin/os-customization-set"
 $SCP "$REPO_ROOT/libexec/os-customization-check" "$remote:$TARGET_PREFIX/libexec/os-customization-check"
@@ -157,10 +164,14 @@ $SSH "$remote" "chmod 0755 $TARGET_PREFIX/bin/os-customization-set $TARGET_PREFI
 if [ "$skip_services" -eq 0 ]; then
     if [ "$rootfs_stage" -eq 1 ]; then
         open_rootfs_rw
-        if $SSH "$remote" "test -d /run/rootfs-etc/systemd"; then
-            service_etc_root=/run/rootfs-etc
-            open_service_etc_rw
+        if ! $SSH "$remote" "grep -Fqs ' /run/rootfs-etc ' /proc/mounts && test -d /run/rootfs-etc"; then
+            echo "rootfs staging requires the read-only SYSROOT /etc bind mount at /run/rootfs-etc" >&2
+            echo "boot the target through os-customization-preinit before using --rootfs-stage" >&2
+            close_rootfs_ro || true
+            exit 1
         fi
+        service_etc_root=/run/rootfs-etc
+        open_service_etc_rw
     fi
     sed "s#/usr/lib/os-customization/python#$service_python_prefix#g; s#/usr/libexec#$service_libexec_prefix#g; s#/usr/bin#$service_bin_prefix#g" \
         "$REPO_ROOT/systemd/os-customization-check.service" > "$tmpdir/os-customization-check.service"

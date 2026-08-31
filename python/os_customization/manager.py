@@ -20,6 +20,7 @@ MANIFEST_FILENAME = "manifest.json"
 WHITEOUTS_FILENAME = "whiteouts.txt"
 FORMAT_VERSION = 1
 DEFAULT_LAYOUT_ROOT = Path("/data/os-customization")
+LEGACY_OVERLAY_ETC_ROOT = Path("/data/overlay-etc")
 DEFAULT_MAX_ATTEMPTS = 3
 DEFAULT_ISSUE_PATH = Path("/etc/issue")
 CORE_OS_VERSION_PATTERN = re.compile(r"v?(\d+)\.(\d+)(?:\.(\d+))?")
@@ -51,10 +52,25 @@ class CustomizationManager:
         root: Path = DEFAULT_LAYOUT_ROOT,
         max_attempts: int = DEFAULT_MAX_ATTEMPTS,
         issue_path: Path = DEFAULT_ISSUE_PATH,
+        state_root: Optional[Path] = None,
     ):
         self.root = Path(root)
         self.max_attempts = max_attempts
         self.issue_path = Path(issue_path)
+        # Before os-customization, /etc used upper and work directly below
+        # /data/overlay-etc.  Keep using those directories for the production
+        # layout so files written by customers on older images remain in the
+        # OverlayFS upper layer after an OS upgrade.  Alternate roots are used
+        # by development and tests and retain the self-contained layout unless
+        # an explicit state root is supplied.
+        self.legacy_state_layout = state_root is not None or self.root == DEFAULT_LAYOUT_ROOT
+        self.state_root = (
+            Path(state_root)
+            if state_root is not None
+            else LEGACY_OVERLAY_ETC_ROOT
+            if self.root == DEFAULT_LAYOUT_ROOT
+            else self.root
+        )
         self._recovering_transaction = False
 
     @property
@@ -79,11 +95,20 @@ class CustomizationManager:
 
     @property
     def state_etc_path(self) -> Path:
-        return self.root / "state" / "etc"
+        if self.legacy_state_layout:
+            return self.state_root / "upper"
+        return self.state_root / "state" / "etc"
 
     @property
     def state_work_etc_path(self) -> Path:
-        return self.root / "state-work" / "etc"
+        if self.legacy_state_layout:
+            return self.state_root / "work"
+        return self.state_root / "state-work" / "etc"
+
+    @property
+    def state_reset_path(self) -> Path:
+        """Directory removed by factory-reset --wipe-state."""
+        return self.state_root if self.legacy_state_layout else self.state_root / "state"
 
     def slot(self, slot_name: str) -> SlotInfo:
         if slot_name not in {"A", "B"}:
@@ -357,7 +382,7 @@ class CustomizationManager:
                     self._remove_tree_and_sync(backup)
                 else:
                     self._restore_backup(
-                        self.root / "state", backup, self.staging_root / "state.reset.discard"
+                        self.state_reset_path, backup, self.staging_root / "state.reset.discard"
                     )
                 self._clear_transaction()
                 return
@@ -665,9 +690,9 @@ class CustomizationManager:
         self._write_transaction(
             {"kind": "factory-reset", "phase": "prepared", "backup": backup.name}
         )
-        if wipe_state and (self.root / "state").exists():
-            os.replace(self.root / "state", backup)
-            self._fsync_dir(self.root)
+        if wipe_state and self.state_reset_path.exists():
+            os.replace(self.state_reset_path, backup)
+            self._fsync_dir(self.state_reset_path.parent)
             self.state_etc_path.mkdir(parents=True, exist_ok=True)
             self._fsync_dir(self.state_etc_path)
             self._fsync_dir(self.state_etc_path.parent)

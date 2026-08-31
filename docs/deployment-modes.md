@@ -16,7 +16,10 @@ mode is for development only: production runtime helpers do not search that
 location for Python modules.
 
 Run `deploy-test-machine.sh --rootfs-stage` to install the production paths in
-`/usr` and `/sbin` while leaving the active init path unchanged.
+`/usr`, `/sbin`, and SYSROOT `/etc` while leaving the active init path
+unchanged. The target must already have been booted through the preinit wrapper:
+the helper writes systemd units and enablement links through its
+`/run/rootfs-etc` bind mount, never into the live OverlayFS `/etc`.
 
 Live init switch:
 

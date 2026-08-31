@@ -16,6 +16,10 @@ USER_HOSTS = """127.0.0.1 localhost
 127.0.0.1 target-test-04-user
 """
 
+BOOTSTRAP_FACTORY_HOSTS = """127.0.0.1 localhost
+127.0.0.1 target-test-04-bootstrap-factory
+"""
+
 
 def main() -> int:
     parser = build_parser("Run target scenario 04: factory reset")
@@ -26,6 +30,19 @@ def main() -> int:
     try:
         context = TargetContext("04", "factory-reset", "Restore factory configuration and wipe STATE content", log_dir=Path(args.log_dir))
         context.require_ready()
+        # A target with no provisioned FACTORY set cannot be restored through
+        # the public install-factory interface after this scenario.  Provision
+        # a small example set first, then snapshot it as this run's baseline.
+        # Do not replace a real factory customization supplied by the target.
+        if context.status().get("factory_version") is None:
+            bootstrap_factory_payload = context.create_payload(
+                manifest={
+                    "version": "target-test-04-bootstrap-factory-1.0.0",
+                    "compatible_core_os": None,
+                },
+                etc_files={"hosts": BOOTSTRAP_FACTORY_HOSTS},
+            )
+            context.install_factory_payload(bootstrap_factory_payload, "bootstrap-factory")
         factory_snapshot = context.snapshot_factory_payload()
         context.reset_to_factory()
 

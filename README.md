@@ -52,8 +52,6 @@ Common CLI commands:
 - [docs/user-guide.md](docs/user-guide.md): payload format, lifecycle, and CLI
 - [docs/mender-integration.md](docs/mender-integration.md): Mender deployment path
 - [docs/deployment-modes.md](docs/deployment-modes.md): development and target deployment modes
-- [docs/e2e-testing.md](docs/e2e-testing.md): end-to-end test flow
-- [docs/smoke-activation.md](docs/smoke-activation.md): smoke activation procedure
 
 ## Development
 
@@ -66,7 +64,6 @@ pytest
 Target validation is separate from `pytest`:
 
 - `tests/target/scenarios/`: Markdown scenario procedures for manual or agent-driven target testing
-- `scripts/e2e-test-machine.sh`: shell driver for the documented end-to-end reboot flow on a test device
 - `tests/target/run_all_scenarios.py`: Python wrapper that runs the per-scenario target scripts and writes logs under `tests/target/logs/`
 
 Run test with a target device by setting the following environment variables:
