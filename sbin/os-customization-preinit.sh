@@ -15,6 +15,7 @@ MANAGER=${MANAGER:-/usr/bin/os-customization-set}
 BOOT_STATE_DIR=${BOOT_STATE_DIR:-/run/os-customization}
 BOOT_SELECTION_PATH=${BOOT_SELECTION_PATH:-/run/os-customization/boot-selection.json}
 PREINIT_LOG=${PREINIT_LOG:-/dev/kmsg}
+REBOOT_COMMAND=${REBOOT_COMMAND:-reboot}
 
 log() {
     message="PREINIT: $*"
@@ -88,6 +89,24 @@ mount_overlay_etc() {
         log "boot selection marker missing at $BOOT_SELECTION_PATH"
         return 1
     }
+
+    # A customization which was valid for the previous Core OS must make a
+    # newly updated Core OS fail to boot.  This lets the Core OS A/B update
+    # mechanism roll back the image instead of silently booting without the
+    # required factory or USER configuration.
+    case "$SELECTION_REASON" in
+        *-incompatible-core-os*)
+            log "customization incompatible with current Core OS ($SELECTION_REASON); rebooting for Core OS rollback"
+            sync
+            safe_run "$REBOOT_COMMAND" -f || {
+                log "forced reboot for incompatible customization failed"
+                exit 1
+            }
+            # reboot(8) should not return.  Do not continue to real init if it
+            # does, since that would acknowledge the incompatible Core OS.
+            exit 1
+            ;;
+    esac
 
     [ -n "$STATE_ETC_PATH" ] || {
         log "boot-prepare missing state_etc_path"
