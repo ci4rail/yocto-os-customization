@@ -1,11 +1,15 @@
 {
     "format_version": 1,
-    "version": "sample-good-1.0.0",
+    "version": "sample-good-1.1.1",
     "compatible_core_os": null,
     "health_checks": [
         {
             "type": "systemd_unit_active",
             "unit": "chronyd.service"
+        },
+        {
+            "type": "path_exists",
+            "path": "/etc/newfile.txt"
         }
     ]
 }

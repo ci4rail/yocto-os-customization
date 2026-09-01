@@ -403,6 +403,64 @@ manager already cleared `candidate_slot` and must not roll back the
 last-known-good configuration again. It must report the final manager result
 to its caller.
 
+For a successful standalone installation, use this sequence:
+
+```sh
+mender-update install site-config-1.4.2.mender
+reboot
+
+# After reconnecting, wait for os-customization-check.service to finish.
+os-customization-set status
+```
+
+Let `EXPECTED_VERSION` be the `version` from the customization-set manifest
+packaged in the Artifact. Interpret the status output as follows:
+
+| Status fields | Meaning | Required Mender action |
+| --- | --- | --- |
+| `candidate_slot` is `A` or `B`; `candidate_state` is `pending` | The candidate has not completed its health decision. This includes the period before reboot and while the post-boot health check is running. | Wait. Do not commit or roll back unless the deployment is being intentionally cancelled. |
+| `candidate_slot` is `null`; `candidate_state` is `null`; `active_slot` equals `last_good_slot`; `active_version` and `last_good_version` both equal `EXPECTED_VERSION` | The new candidate passed health checks and became the active last-known-good customization. | Run `mender-update commit`. |
+| `candidate_slot` is `null`; `candidate_state` is `rolled-back`, `exhausted`, or `incompatible-core-os` | The new candidate was not accepted. `active_version` may show the previous last-known-good customization, or be `null` for a first-ever candidate. | Run `mender-update rollback` to clear Mender's pending Artifact transaction. |
+| Any other combination | The lifecycle state is incomplete or unexpected. | Do not commit. Preserve the status output and investigate before taking another Mender action. |
+
+In practice, after reboot, keep running `os-customization-set status` until
+`candidate_slot` becomes `null`. If `candidate_state` is `rolled-back`,
+`exhausted`, or `incompatible-core-os`, run `mender-update rollback` at that
+point. Do not roll back while `candidate_slot` is still `A` or `B` with
+`candidate_state` `pending`, unless intentionally cancelling the deployment.
+
+For example, an Artifact carrying manifest version `sample-good-1.1.1` is
+committed only when the status shows:
+
+```json
+{
+  "active_version": "sample-good-1.1.1",
+  "last_good_version": "sample-good-1.1.1",
+  "candidate_slot": null,
+  "candidate_state": null
+}
+```
+
+Then run:
+
+```sh
+mender-update commit
+```
+
+Do **not** use `mender-update install commit`; `commit` is a top-level Mender
+command.
+
+If the health check rolls the candidate back, clear Mender's pending transaction
+with:
+
+```sh
+mender-update rollback
+```
+
+The same command also cancels an installed candidate before reboot. In that
+case the Update Module asks `os-customization-set` to roll back the pending
+candidate; it does not modify the running `/etc`.
+
 This is intentional: `os-customization-check.service` and the manager retain
 authority for runtime health and rollback in both modes. Standalone Mender's
 local Artifact/`Provides` record is transport history only and must not be
@@ -541,28 +599,6 @@ os-customization-set factory-reset --wipe-state
 then removes the request marker and reboots. Enable the service only in systems
 where the mechanism used to create that marker is appropriately authorized.
 
-## Test and deployment helpers
-
-The following scripts are for integration testing and provisioning, not normal
-customer updates:
-
-| Script | Purpose |
-| --- | --- |
-| `scripts/deploy-test-machine.sh` | Copies the tools to a target test machine and can stage rootfs integration. |
-| `scripts/e2e-test-machine.sh` | Exercises good-candidate commit and bad-candidate rollback on a target machine. |
-| `scripts/restore-target-init.sh` | Restores the stock init path after a live init-wrapper test. |
-| `scripts/smoke-activate-init.py` | Smoke-tests activation of the init wrapper. |
-
-`deploy-test-machine.sh --rootfs-stage` installs production runtime files below
-`/usr` and `/sbin` without changing `/sbin/init`. Development-only staging may
-use `/data/os-customization-tools`, but production helpers never search that
-location for Python modules. `--rootfs-stage --activate-init-wrapper`
-explicitly switches `/sbin/init` to the preinit wrapper; use it only on a test
-device with a recovery plan.
-
-The end-to-end test refuses to run until it finds the boot-selection marker,
-which prevents testing commit and rollback on a device whose boot path has not
-been integrated.
 
 ## Status and troubleshooting
 
