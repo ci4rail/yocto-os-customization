@@ -9,6 +9,7 @@ import shlex
 import shutil
 import stat
 import subprocess
+import sys
 from dataclasses import dataclass
 from contextlib import contextmanager
 from pathlib import Path
@@ -136,8 +137,30 @@ class CustomizationManager:
                         "installed": False,
                     },
                 )
-        if not self.status_path.exists():
+        status_recovery_reason = self._status_recovery_reason()
+        if status_recovery_reason:
+            print(
+                f"warning: {self.status_path} is {status_recovery_reason}; "
+                "reinitializing default lifecycle status",
+                file=sys.stderr,
+            )
             self.write_status(self.default_status())
+
+    def _status_recovery_reason(self) -> Optional[str]:
+        """Return why lifecycle status must be initialized, if necessary.
+
+        A malformed status record cannot safely describe an active USER slot.
+        Treat it exactly like an absent record: preserve the slot contents, but
+        reset lifecycle selection to the default FACTORY/SYSROOT state.
+        """
+        try:
+            with self.status_path.open("r", encoding="utf-8") as handle:
+                json.load(handle)
+        except FileNotFoundError:
+            return "missing"
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            return "corrupt"
+        return None
 
     @contextmanager
     def operation_lock(self):

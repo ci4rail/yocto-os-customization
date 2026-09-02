@@ -1,6 +1,8 @@
 import json
+import io
 import os
 import stat
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -182,6 +184,40 @@ class CoreOsCompatibilityTests(unittest.TestCase):
 
 
 class StatusVersionTests(unittest.TestCase):
+    def test_corrupt_status_is_reinitialized_like_missing_status(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir) / "state"
+            manager = CustomizationManager(root=root)
+            manager.ensure_layout()
+            manager.slot("A").manifest_path.write_text(
+                json.dumps({"version": "existing-user-customization"}), encoding="utf-8"
+            )
+            manager.status_path.write_text("{ invalid json", encoding="utf-8")
+
+            warning = io.StringIO()
+            with mock.patch.object(sys, "stderr", warning):
+                status = manager.read_status()
+
+            self.assertIsNone(status["active_slot"])
+            self.assertIsNone(status["last_good_slot"])
+            self.assertIsNone(status["candidate_slot"])
+            self.assertTrue(manager.slot("A").manifest_path.exists())
+            self.assertEqual(json.loads(manager.status_path.read_text(encoding="utf-8")), status)
+            self.assertIn("warning:", warning.getvalue())
+            self.assertIn("is corrupt", warning.getvalue())
+
+    def test_missing_status_is_reinitialized_with_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            manager = CustomizationManager(root=Path(temp_dir) / "state")
+
+            warning = io.StringIO()
+            with mock.patch.object(sys, "stderr", warning):
+                status = manager.read_status()
+
+            self.assertIsNone(status["active_slot"])
+            self.assertIn("warning:", warning.getvalue())
+            self.assertIn("is missing", warning.getvalue())
+
     def test_status_reports_versions_for_active_and_last_good_slots(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir) / "state"
