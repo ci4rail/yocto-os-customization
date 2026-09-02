@@ -200,13 +200,11 @@ the version cannot be read from `/etc/issue`.
 when the payload is deliberately compatible with all supported Core OS images.
 
 Compatibility is checked again during early boot, before the OverlayFS is
-mounted. This protects independently deployed Core OS updates: a USER payload
-that no longer matches the newly booted Core OS is excluded from `/etc`, and
-boot continues using a compatible last-known-good USER payload or, if none is
-compatible, FACTORY plus SYSROOT. An incompatible pending candidate is disabled
-(but remains stored in its slot) so that it cannot block a later installation.
-Factory customization is similarly excluded when its manifest declares an
-incompatible Core OS range. The boot-selection marker and `status` report the
+mounted. If any FACTORY or USER customization considered for the boot is
+incompatible with the newly booted Core OS, preinit forces an immediate reboot.
+This deliberately makes the new Core OS boot fail, allowing the Core OS A/B
+update mechanism to roll back to the image that is compatible with the
+persistent customization. The boot-selection marker and `status` report the
 selection reason.
 
 #### Health checks
@@ -507,8 +505,8 @@ content. These controls answer different questions.
 Mender's ordinary Artifact `Provides` value records the version of the last
 Artifact it successfully processed. It is useful deployment metadata, but it
 is **not** authoritative for the effective customization: a later automatic
-rollback, incompatibility deactivation, or factory reset can change the active
-USER slot without a new Mender Artifact transaction.
+rollback caused by a Core OS/customization incompatibility, or factory reset
+can change the active USER slot without a new Mender Artifact transaction.
 
 `os-customization-set status` is authoritative. It reports
 `active_version`, `last_good_version`, `candidate_version`, and their slots,
@@ -561,9 +559,10 @@ This is the early-boot wrapper that makes a selected payload effective. It:
 6. Starts the real init program.
 
 If the data mount, manager, or overlay mount fails, the wrapper logs the failure
-and continues with the unmodified Core OS `/etc`. The wrapper is an integration
-component: it must be installed as the boot init path for candidate activation
-and automatic rollback to be meaningful.
+and continues with the unmodified Core OS `/etc`. An incompatibility is handled
+separately: it forces a reboot before real init starts so the Core OS update can
+roll back. The wrapper is an integration component: it must be installed as the
+boot init path for candidate activation and automatic rollback to be meaningful.
 
 Its key environment overrides include `DATA_DEVICE`, `DATA_MOUNT`,
 `OS_CUSTOMIZATION_ROOT`, `MANAGER`, `REAL_INIT`, and `FALLBACK_REAL_INIT`.
