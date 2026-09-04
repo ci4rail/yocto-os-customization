@@ -486,8 +486,10 @@ class CustomizationManager:
         except OSError:
             return None
 
-        # Example: Moducop-CPU01_Standard-Image_v2.11.0.51609d8.20260513.1047
-        match = re.search(r"(?:^|_)v(\d+\.\d+\.\d+)(?=[.+\s]|$)", issue)
+        # Examples:
+        # Moducop-CPU01_Standard-Image_v2.11.0.51609d8.20260513.1047
+        # Moducop-CPU01Plus_Standard-Image_v2.13.0-alpha1.7e35502.20260903.0616.mender
+        match = re.search(r"(?:^|_)v(\d+\.\d+\.\d+)(?=[.+\s-]|$)", issue)
         if not match:
             return None
         return f"v{match.group(1)}"

@@ -70,6 +70,32 @@ class CoreOsCompatibilityTests(unittest.TestCase):
 
             self.assertEqual(manager.current_core_os_version(), "v2.12.0")
 
+    def test_reads_semantic_version_with_prerelease_image_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            issue = root / "issue"
+            issue.write_text(
+                "Moducop-CPU01Plus_Standard-Image_"
+                "v2.13.0-aplha1.7e35502.20260903.0616\n",
+                encoding="utf-8",
+            )
+            manager = CustomizationManager(root=root / "state", issue_path=issue)
+
+            self.assertEqual(manager.current_core_os_version(), "v2.13.0")
+
+    def test_reads_semantic_version_with_release_candidate_image_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            issue = root / "issue"
+            issue.write_text(
+                "Moducop-CPU01Plus_Standard-Image_"
+                "v2.13.0-rc.1.7e35502.20260903.0616\n",
+                encoding="utf-8",
+            )
+            manager = CustomizationManager(root=root / "state", issue_path=issue)
+
+            self.assertEqual(manager.current_core_os_version(), "v2.13.0")
+
     def test_rejects_incompatible_payload(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
