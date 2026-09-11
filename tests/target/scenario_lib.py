@@ -298,7 +298,6 @@ class TargetContext:
         *,
         manifest: dict,
         etc_files: Optional[dict[str, str]] = None,
-        whiteouts: Optional[list[str]] = None,
     ) -> Path:
         temp_dir = tempfile.TemporaryDirectory(prefix=f"{self.scenario_id}-{self.slug}-")
         self._temp_dirs.append(temp_dir)
@@ -311,8 +310,6 @@ class TargetContext:
             target_path = payload_dir / "etc" / relative_path
             target_path.parent.mkdir(parents=True, exist_ok=True)
             target_path.write_text(content, encoding="utf-8")
-        if whiteouts:
-            (payload_dir / "whiteouts.txt").write_text("\n".join(whiteouts) + "\n", encoding="utf-8")
         return payload_dir
 
     def upload_payload(self, payload_dir: Path, name: str) -> str:

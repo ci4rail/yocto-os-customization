@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -eu
+set -x
 
 TARGET_HOST=${TARGET_HOST:-}
 TARGET_USER=${TARGET_USER:-root}

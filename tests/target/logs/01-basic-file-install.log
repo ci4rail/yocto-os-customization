@@ -1,160 +1,159 @@
-[2026-08-31T09:23:17Z] SCENARIO 01: Install a basic /etc/hosts customization
-[2026-08-31T09:23:17Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> true
-[2026-08-31T09:23:18Z] RESULT connectivity: exit=0
-[2026-08-31T09:23:18Z] COMMAND cli-present: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -x /usr/bin/os-customization-set'
-[2026-08-31T09:23:19Z] RESULT cli-present: exit=0
-[2026-08-31T09:23:19Z] COMMAND boot-integration: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -f /run/os-customization/boot-selection.json'
-[2026-08-31T09:23:20Z] RESULT boot-integration: exit=0
-[2026-08-31T09:23:20Z] COMMAND health-timer-enabled: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled os-customization-check.timer'
-[2026-08-31T09:23:20Z] STDOUT health-timer-enabled:
+[2026-09-10T19:28:31Z] SCENARIO 01: Install a basic /etc/hosts customization
+[2026-09-10T19:28:31Z] COMMAND connectivity: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> true
+[2026-09-10T19:28:33Z] RESULT connectivity: exit=0
+[2026-09-10T19:28:33Z] COMMAND cli-present: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -x /usr/bin/os-customization-set'
+[2026-09-10T19:28:34Z] RESULT cli-present: exit=0
+[2026-09-10T19:28:34Z] COMMAND boot-integration: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'test -f /run/os-customization/boot-selection.json'
+[2026-09-10T19:28:35Z] RESULT boot-integration: exit=0
+[2026-09-10T19:28:35Z] COMMAND health-timer-enabled: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl is-enabled os-customization-check.timer'
+[2026-09-10T19:28:37Z] STDOUT health-timer-enabled:
 enabled
-[2026-08-31T09:23:20Z] RESULT health-timer-enabled: exit=0
-[2026-08-31T09:23:20Z] ACTION factory reset with state wipe
-[2026-08-31T09:23:20Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:21Z] STDOUT boot-id:
-a689b189-ecf8-4962-9b2d-60e7f82ab580
-[2026-08-31T09:23:21Z] RESULT boot-id: exit=0
-[2026-08-31T09:23:21Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
-[2026-08-31T09:23:23Z] STDOUT factory-reset:
+[2026-09-10T19:28:37Z] RESULT health-timer-enabled: exit=0
+[2026-09-10T19:28:37Z] ACTION factory reset with state wipe
+[2026-09-10T19:28:37Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:28:38Z] STDOUT boot-id:
+3a5f3547-3d89-4583-a355-6d1b035a91b6
+[2026-09-10T19:28:38Z] RESULT boot-id: exit=0
+[2026-09-10T19:28:38Z] COMMAND factory-reset: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization factory-reset --wipe-state'
+[2026-09-10T19:28:40Z] STDOUT factory-reset:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:23:23Z] RESULT factory-reset: exit=0
-[2026-08-31T09:23:23Z] ACTION reboot: apply factory reset
-[2026-08-31T09:23:23Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-31T09:23:24Z] RESULT reboot: exit=0
-[2026-08-31T09:23:24Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:25Z] STDERR boot-id:
+[2026-09-10T19:28:40Z] RESULT factory-reset: exit=0
+[2026-09-10T19:28:40Z] ACTION reboot: apply factory reset
+[2026-09-10T19:28:40Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-09-10T19:28:42Z] RESULT reboot: exit=0
+[2026-09-10T19:28:42Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:28:43Z] STDERR boot-id:
 kex_exchange_identification: read: Connection reset by peer
-[2026-08-31T09:23:25Z] RESULT boot-id: exit=255
-[2026-08-31T09:23:27Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:27Z] STDERR boot-id:
+[2026-09-10T19:28:43Z] RESULT boot-id: exit=255
+[2026-09-10T19:28:45Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:28:45Z] STDERR boot-id:
 ssh: connect to host <target> port 22: Connection refused
-[2026-08-31T09:23:27Z] RESULT boot-id: exit=255
-[2026-08-31T09:23:29Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:38Z] TIMEOUT boot-id: exceeded 10s; terminating command
-[2026-08-31T09:23:38Z] RESULT boot-id: exit=124
-[2026-08-31T09:23:40Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:50Z] TIMEOUT boot-id: exceeded 10s; terminating command
-[2026-08-31T09:23:50Z] RESULT boot-id: exit=124
-[2026-08-31T09:23:52Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:23:55Z] STDOUT boot-id:
-6b841ace-ce09-4ebe-ac14-6c9ed5e3c5de
-[2026-08-31T09:23:55Z] RESULT boot-id: exit=0
-[2026-08-31T09:23:55Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:23:56Z] STDOUT status:
+[2026-09-10T19:28:45Z] RESULT boot-id: exit=255
+[2026-09-10T19:28:47Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:28:57Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-09-10T19:28:57Z] RESULT boot-id: exit=124
+[2026-09-10T19:28:59Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:02Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-09-10T19:29:02Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:04Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:07Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-09-10T19:29:07Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:09Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:12Z] STDOUT boot-id:
+75de6aa9-972d-4edb-a2d9-672c79ac5687
+[2026-09-10T19:29:12Z] RESULT boot-id: exit=0
+[2026-09-10T19:29:12Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:29:14Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:23:56Z] RESULT status: exit=0
-[2026-08-31T09:23:56Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:23:58Z] STDOUT status:
+[2026-09-10T19:29:14Z] RESULT status: exit=0
+[2026-09-10T19:29:14Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:29:15Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:23:58Z] RESULT status: exit=0
-[2026-08-31T09:23:58Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:23:59Z] STDOUT status:
+[2026-09-10T19:29:15Z] RESULT status: exit=0
+[2026-09-10T19:29:15Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:29:17Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:23:59Z] RESULT status: exit=0
-[2026-08-31T09:23:59Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:00Z] STDOUT status:
+[2026-09-10T19:29:17Z] RESULT status: exit=0
+[2026-09-10T19:29:17Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:29:19Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:24:00Z] RESULT status: exit=0
-[2026-08-31T09:24:00Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}
-[2026-08-31T09:24:00Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
-[2026-08-31T09:24:00Z] STDOUT read /etc/hosts:
-127.0.0.1	localhost
-
-# The following lines are desirable for IPv6 capable hosts
-::1     localhost ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-[2026-08-31T09:24:00Z] RESULT read /etc/hosts: exit=0
-[2026-08-31T09:24:00Z] COMMAND prepare-upload-dir: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'rm -rf /tmp/os-customization-target-tests/01-good && mkdir -p /tmp/os-customization-target-tests'
-[2026-08-31T09:24:01Z] RESULT prepare-upload-dir: exit=0
-[2026-08-31T09:24:01Z] COMMAND upload good: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 -r /tmp/01-basic-file-install-ryypbz6l root@<target>:/tmp/os-customization-target-tests/01-good
-[2026-08-31T09:24:03Z] RESULT upload good: exit=0
-[2026-08-31T09:24:03Z] COMMAND install good: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization install /tmp/os-customization-target-tests/01-good'
-[2026-08-31T09:24:04Z] STDOUT install good:
+[2026-09-10T19:29:19Z] RESULT status: exit=0
+[2026-09-10T19:29:19Z] WAIT satisfied: factory-reset stabilization: {"active_slot": null, "active_version": null, "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e", "boot_selection_reason": "no-user-customization", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-bootstrap-factory-1.0.0", "format_version": 1, "last_good_slot": null, "last_good_version": null, "rollback_reason": null}
+[2026-09-10T19:29:19Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
+[2026-09-10T19:29:20Z] STDOUT read /etc/hosts:
+127.0.0.1 localhost
+127.0.0.1 target-test-04-bootstrap-factory
+[2026-09-10T19:29:20Z] RESULT read /etc/hosts: exit=0
+[2026-09-10T19:29:20Z] COMMAND prepare-upload-dir: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'rm -rf /tmp/os-customization-target-tests/01-good && mkdir -p /tmp/os-customization-target-tests'
+[2026-09-10T19:29:21Z] RESULT prepare-upload-dir: exit=0
+[2026-09-10T19:29:21Z] COMMAND upload good: sshpass -e scp -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 -r /tmp/01-basic-file-install-wsmho2x5 root@<target>:/tmp/os-customization-target-tests/01-good
+[2026-09-10T19:29:24Z] RESULT upload good: exit=0
+[2026-09-10T19:29:24Z] COMMAND install good: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization install /tmp/os-customization-target-tests/01-good'
+[2026-09-10T19:29:26Z] STDOUT install good:
 {
   "slot": "A",
   "status": {
     "active_slot": null,
     "active_version": null,
-    "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+    "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
     "boot_selection_reason": "no-user-customization",
     "candidate_attempts": 0,
     "candidate_slot": "A",
     "candidate_state": "pending",
     "candidate_version": "target-test-01-hosts-1.0.0",
-    "factory_version": null,
+    "factory_version": "target-test-04-bootstrap-factory-1.0.0",
     "format_version": 1,
     "last_good_slot": null,
     "last_good_version": null,
@@ -162,143 +161,189 @@ ff02::2 ip6-allrouters
   },
   "version": "target-test-01-hosts-1.0.0"
 }
-[2026-08-31T09:24:04Z] RESULT install good: exit=0
-[2026-08-31T09:24:04Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
-[2026-08-31T09:24:05Z] STDOUT read /etc/hosts:
-127.0.0.1	localhost
-
-# The following lines are desirable for IPv6 capable hosts
-::1     localhost ip6-localhost ip6-loopback
-fe00::0 ip6-localnet
-ff00::0 ip6-mcastprefix
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-[2026-08-31T09:24:05Z] RESULT read /etc/hosts: exit=0
-[2026-08-31T09:24:05Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:07Z] STDOUT status:
+[2026-09-10T19:29:26Z] RESULT install good: exit=0
+[2026-09-10T19:29:26Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
+[2026-09-10T19:29:27Z] STDOUT read /etc/hosts:
+127.0.0.1 localhost
+127.0.0.1 target-test-04-bootstrap-factory
+[2026-09-10T19:29:27Z] RESULT read /etc/hosts: exit=0
+[2026-09-10T19:29:27Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:29:29Z] STDOUT status:
 {
   "active_slot": null,
   "active_version": null,
-  "boot_id_last_seen": "cb4b3640-ba95-419b-9fcb-947125402465",
+  "boot_id_last_seen": "d6f338f0-eb1e-4508-8287-d9785a817d6e",
   "boot_selection_reason": "no-user-customization",
   "candidate_attempts": 0,
   "candidate_slot": "A",
   "candidate_state": "pending",
   "candidate_version": "target-test-01-hosts-1.0.0",
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": null,
   "last_good_version": null,
   "rollback_reason": null
 }
-[2026-08-31T09:24:07Z] RESULT status: exit=0
-[2026-08-31T09:24:07Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:07Z] STDOUT boot-id:
-6b841ace-ce09-4ebe-ac14-6c9ed5e3c5de
-[2026-08-31T09:24:07Z] RESULT boot-id: exit=0
-[2026-08-31T09:24:07Z] ACTION reboot: activate scenario 01 candidate
-[2026-08-31T09:24:07Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
-[2026-08-31T09:24:08Z] RESULT reboot: exit=0
-[2026-08-31T09:24:08Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:09Z] STDERR boot-id:
+[2026-09-10T19:29:29Z] RESULT status: exit=0
+[2026-09-10T19:29:29Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:30Z] STDOUT boot-id:
+75de6aa9-972d-4edb-a2d9-672c79ac5687
+[2026-09-10T19:29:30Z] RESULT boot-id: exit=0
+[2026-09-10T19:29:30Z] ACTION reboot: activate scenario 01 candidate
+[2026-09-10T19:29:30Z] COMMAND reboot: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'systemctl reboot >/dev/null 2>&1 || reboot || true'
+[2026-09-10T19:29:31Z] RESULT reboot: exit=0
+[2026-09-10T19:29:31Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:32Z] STDERR boot-id:
 kex_exchange_identification: read: Connection reset by peer
-[2026-08-31T09:24:09Z] RESULT boot-id: exit=255
-[2026-08-31T09:24:11Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:11Z] STDERR boot-id:
-kex_exchange_identification: read: Connection reset by peer
-[2026-08-31T09:24:11Z] RESULT boot-id: exit=255
-[2026-08-31T09:24:13Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:13Z] STDERR boot-id:
+[2026-09-10T19:29:32Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:34Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:34Z] STDERR boot-id:
 ssh: connect to host <target> port 22: Connection refused
-[2026-08-31T09:24:13Z] RESULT boot-id: exit=255
-[2026-08-31T09:24:15Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:25Z] TIMEOUT boot-id: exceeded 10s; terminating command
-[2026-08-31T09:24:25Z] RESULT boot-id: exit=124
-[2026-08-31T09:24:27Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:36Z] TIMEOUT boot-id: exceeded 10s; terminating command
-[2026-08-31T09:24:36Z] RESULT boot-id: exit=124
-[2026-08-31T09:24:38Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
-[2026-08-31T09:24:40Z] STDOUT boot-id:
-c1e20b1f-9641-45d3-b5d9-be0eb1c8e162
-[2026-08-31T09:24:40Z] RESULT boot-id: exit=0
-[2026-08-31T09:24:40Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
-[2026-08-31T09:24:41Z] STDOUT read /etc/hosts:
+[2026-09-10T19:29:34Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:36Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:46Z] TIMEOUT boot-id: exceeded 10s; terminating command
+[2026-09-10T19:29:46Z] RESULT boot-id: exit=124
+[2026-09-10T19:29:48Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:49Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-09-10T19:29:49Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:51Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:52Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-09-10T19:29:52Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:54Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:29:57Z] STDERR boot-id:
+ssh: connect to host <target> port 22: No route to host
+[2026-09-10T19:29:57Z] RESULT boot-id: exit=255
+[2026-09-10T19:29:59Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:30:01Z] STDOUT boot-id:
+d96d4213-6b73-4ee1-bbc8-5a2cb224f60a
+[2026-09-10T19:30:01Z] RESULT boot-id: exit=0
+[2026-09-10T19:30:01Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
+[2026-09-10T19:30:02Z] STDOUT read /etc/hosts:
 127.0.0.1 localhost
 127.0.0.1 target-test-01-customized
 
 # Scenario 01: user customization override
-[2026-08-31T09:24:41Z] RESULT read /etc/hosts: exit=0
-[2026-08-31T09:24:41Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:42Z] STDOUT status:
+[2026-09-10T19:30:02Z] RESULT read /etc/hosts: exit=0
+[2026-09-10T19:30:02Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:04Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 1,
+  "candidate_slot": "A",
+  "candidate_state": "pending",
+  "candidate_version": "target-test-01-hosts-1.0.0",
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-09-10T19:30:04Z] RESULT status: exit=0
+[2026-09-10T19:30:04Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:06Z] STDOUT status:
+{
+  "active_slot": null,
+  "active_version": null,
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
+  "boot_selection_reason": "candidate-compatible",
+  "candidate_attempts": 1,
+  "candidate_slot": "A",
+  "candidate_state": "pending",
+  "candidate_version": "target-test-01-hosts-1.0.0",
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
+  "format_version": 1,
+  "last_good_slot": null,
+  "last_good_version": null,
+  "rollback_reason": null
+}
+[2026-09-10T19:30:06Z] RESULT status: exit=0
+[2026-09-10T19:30:08Z] COMMAND boot-id: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /proc/sys/kernel/random/boot_id'
+[2026-09-10T19:30:09Z] STDOUT boot-id:
+d96d4213-6b73-4ee1-bbc8-5a2cb224f60a
+[2026-09-10T19:30:09Z] RESULT boot-id: exit=0
+[2026-09-10T19:30:09Z] COMMAND read /etc/hosts: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> 'cat /etc/hosts'
+[2026-09-10T19:30:10Z] STDOUT read /etc/hosts:
+127.0.0.1 localhost
+127.0.0.1 target-test-01-customized
+
+# Scenario 01: user customization override
+[2026-09-10T19:30:10Z] RESULT read /etc/hosts: exit=0
+[2026-09-10T19:30:10Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:12Z] STDOUT status:
 {
   "active_slot": "A",
   "active_version": "target-test-01-hosts-1.0.0",
-  "boot_id_last_seen": "c1e20b1f-9641-45d3-b5d9-be0eb1c8e162",
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
   "boot_selection_reason": "candidate-compatible",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": "A",
   "last_good_version": "target-test-01-hosts-1.0.0",
   "rollback_reason": null
 }
-[2026-08-31T09:24:42Z] RESULT status: exit=0
-[2026-08-31T09:24:42Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:44Z] STDOUT status:
+[2026-09-10T19:30:12Z] RESULT status: exit=0
+[2026-09-10T19:30:12Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:14Z] STDOUT status:
 {
   "active_slot": "A",
   "active_version": "target-test-01-hosts-1.0.0",
-  "boot_id_last_seen": "c1e20b1f-9641-45d3-b5d9-be0eb1c8e162",
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
   "boot_selection_reason": "candidate-compatible",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": "A",
   "last_good_version": "target-test-01-hosts-1.0.0",
   "rollback_reason": null
 }
-[2026-08-31T09:24:44Z] RESULT status: exit=0
-[2026-08-31T09:24:44Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:45Z] STDOUT status:
+[2026-09-10T19:30:14Z] RESULT status: exit=0
+[2026-09-10T19:30:14Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:16Z] STDOUT status:
 {
   "active_slot": "A",
   "active_version": "target-test-01-hosts-1.0.0",
-  "boot_id_last_seen": "c1e20b1f-9641-45d3-b5d9-be0eb1c8e162",
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
   "boot_selection_reason": "candidate-compatible",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": "A",
   "last_good_version": "target-test-01-hosts-1.0.0",
   "rollback_reason": null
 }
-[2026-08-31T09:24:45Z] RESULT status: exit=0
-[2026-08-31T09:24:45Z] WAIT satisfied: scenario 01 activation: {"active_slot": "A", "active_version": "target-test-01-hosts-1.0.0", "boot_id_last_seen": "c1e20b1f-9641-45d3-b5d9-be0eb1c8e162", "boot_selection_reason": "candidate-compatible", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": null, "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-01-hosts-1.0.0", "rollback_reason": null}
-[2026-08-31T09:24:45Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
-[2026-08-31T09:24:46Z] STDOUT status:
+[2026-09-10T19:30:16Z] RESULT status: exit=0
+[2026-09-10T19:30:16Z] WAIT satisfied: scenario 01 activation: {"active_slot": "A", "active_version": "target-test-01-hosts-1.0.0", "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a", "boot_selection_reason": "candidate-compatible", "candidate_attempts": 0, "candidate_slot": null, "candidate_state": null, "candidate_version": null, "factory_version": "target-test-04-bootstrap-factory-1.0.0", "format_version": 1, "last_good_slot": "A", "last_good_version": "target-test-01-hosts-1.0.0", "rollback_reason": null}
+[2026-09-10T19:30:16Z] COMMAND status: sshpass -e ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1 -o NumberOfPasswordPrompts=1 root@<target> '/usr/bin/os-customization-set --root /data/os-customization status'
+[2026-09-10T19:30:17Z] STDOUT status:
 {
   "active_slot": "A",
   "active_version": "target-test-01-hosts-1.0.0",
-  "boot_id_last_seen": "c1e20b1f-9641-45d3-b5d9-be0eb1c8e162",
+  "boot_id_last_seen": "d96d4213-6b73-4ee1-bbc8-5a2cb224f60a",
   "boot_selection_reason": "candidate-compatible",
   "candidate_attempts": 0,
   "candidate_slot": null,
   "candidate_state": null,
   "candidate_version": null,
-  "factory_version": null,
+  "factory_version": "target-test-04-bootstrap-factory-1.0.0",
   "format_version": 1,
   "last_good_slot": "A",
   "last_good_version": "target-test-01-hosts-1.0.0",
   "rollback_reason": null
 }
-[2026-08-31T09:24:46Z] RESULT status: exit=0
-[2026-08-31T09:24:46Z] SCENARIO 01 PASS
+[2026-09-10T19:30:17Z] RESULT status: exit=0
+[2026-09-10T19:30:17Z] SCENARIO 01 PASS

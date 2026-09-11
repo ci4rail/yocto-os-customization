@@ -1,7 +1,6 @@
 import json
 import io
 import os
-import stat
 import sys
 import tempfile
 import unittest
@@ -306,7 +305,7 @@ class StatusVersionTests(unittest.TestCase):
 
 
 class FactoryInstallTests(unittest.TestCase):
-    def test_install_factory_applies_whiteouts_without_user_payload_validation(self) -> None:
+    def test_install_factory_without_user_payload_validation(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             payload = root / "factory-payload"
@@ -323,17 +322,13 @@ class FactoryInstallTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
-            (payload / "whiteouts.txt").write_text("/etc/obsolete.conf\n", encoding="utf-8")
             manager = CustomizationManager(root=root / "state", issue_path=root / "missing-issue")
 
-            expected_marker = manager.staging_root / "factory.tmp" / "etc" / ".wh.obsolete.conf"
-            with mock.patch("os_customization.manager.os.mknod") as mknod:
-                result = manager.install_factory_payload(payload)
+            result = manager.install_factory_payload(payload)
 
             self.assertEqual(result["version"], "factory-1.0.0")
             self.assertEqual(result["status"]["factory_version"], "factory-1.0.0")
             self.assertTrue((manager.factory_path / "etc" / "chrony.conf").is_file())
-            mknod.assert_called_once_with(expected_marker, stat.S_IFCHR | 0o000, os.makedev(0, 0))
 
 
 class PowerCutRecoveryTests(unittest.TestCase):
