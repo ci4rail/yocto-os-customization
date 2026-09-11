@@ -336,6 +336,21 @@ Built-in installation-time validation invokes `sshd -t`, `nft -c`, and
 `systemd-analyze verify` when the corresponding configuration and validator are
 present. These checks supplement, but do not replace, the runtime health checks.
 
+Systemd verification uses a temporary filesystem root in a private mount
+namespace. Its read-only `/etc` combines STATE, the candidate, FACTORY and the
+original rootfs `/etc`, while system executables and vendor units remain
+available. The candidate layer uses the supplied payload's `etc/` directory
+directly, without copying it. Keep the payload unchanged throughout validation
+and installation. Thus `ExecStart=/etc/bin/example` can reference a file in the new
+payload before reboot. The running `/etc` is unaffected. This check requires
+util-linux `unshare`, `mount`, OverlayFS and mount namespace privileges; failure
+to create the validation view rejects validation with a diagnostic. The original
+rootfs bind mount defaults to `/run/rootfs-etc` (`ROOTFS_ETC_BIND` overrides it,
+as in preinit). Before the `/etc` overlay is installed, ordinary `/etc` is used
+if that bind mount is absent. Unit generators and manual-page checks are disabled
+during verification. Other built-in validators still use the running filesystem
+for absolute include paths.
+
 ## Mender field deployment
 
 > **Status:** Standalone Mender operation has been tested on the development

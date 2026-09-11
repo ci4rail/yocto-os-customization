@@ -10,15 +10,15 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Optional
 
 
 STATUS_FILENAME = "status.json"
 MANIFEST_FILENAME = "manifest.json"
-WHITEOUTS_FILENAME = "whiteouts.txt"
 FORMAT_VERSION = 1
 DEFAULT_LAYOUT_ROOT = Path("/data/os-customization")
 LEGACY_OVERLAY_ETC_ROOT = Path("/data/overlay-etc")
@@ -209,7 +209,7 @@ class CustomizationManager:
         return status
 
     def _load_slot_version(self, slot_name: object) -> Optional[str]:
-        if slot_name not in {"A", "B"}:
+        if not isinstance(slot_name, str) or slot_name not in {"A", "B"}:
             return None
         return self._load_manifest_version(self.slot(slot_name).manifest_path)
 
@@ -317,7 +317,7 @@ class CustomizationManager:
         return "\n".join(f"{key}={shlex.quote(value)}" for key, value in shell_values.items())
 
     def _slot_is_compatible(self, slot_name: object) -> tuple[bool, str]:
-        if slot_name not in {"A", "B"}:
+        if not isinstance(slot_name, str) or slot_name not in {"A", "B"}:
             return False, "invalid-slot"
         return self._manifest_is_compatible(self.slot(slot_name).manifest_path)
 
@@ -472,10 +472,6 @@ class CustomizationManager:
             if path.is_symlink():
                 self._validate_symlink_target(relative, path)
 
-        whiteouts = self._read_whiteouts(payload_dir / WHITEOUTS_FILENAME)
-        for whiteout in whiteouts:
-            self._validate_absolute_whiteout_path(whiteout)
-
         self._run_builtin_validators(etc_root)
         return manifest
 
@@ -548,7 +544,6 @@ class CustomizationManager:
         (tmp_dir / "etc").mkdir()
 
         self._copy_tree(Path(payload_dir) / "etc", tmp_dir / "etc")
-        self._materialize_whiteouts(tmp_dir / "etc", self._read_whiteouts(Path(payload_dir) / WHITEOUTS_FILENAME))
         self._write_json_atomic(tmp_dir / MANIFEST_FILENAME, manifest)
         self._fsync_tree(tmp_dir)
 
@@ -608,7 +603,6 @@ class CustomizationManager:
         shutil.copy2(manifest_path, tmp_dir / MANIFEST_FILENAME, follow_symlinks=False)
         (tmp_dir / "etc").mkdir()
         self._copy_tree(etc_root, tmp_dir / "etc")
-        self._materialize_whiteouts(tmp_dir / "etc", self._read_whiteouts(payload_dir / WHITEOUTS_FILENAME))
         self._fsync_tree(tmp_dir)
 
         backup_dir = self.staging_root / "factory.backup"
@@ -738,16 +732,6 @@ class CustomizationManager:
         if any(part in {"", ".", ".."} for part in parts):
             raise CustomizationError(f"invalid relative path below etc/: {relative}")
 
-    def _validate_absolute_whiteout_path(self, path_str: str) -> None:
-        path = Path(path_str)
-        if not path.is_absolute():
-            raise CustomizationError(f"whiteout entry must be absolute: {path_str}")
-        if not str(path).startswith("/etc/") and str(path) != "/etc":
-            raise CustomizationError(f"whiteout outside /etc is not allowed: {path_str}")
-        normalized = Path(os.path.normpath(str(path)))
-        if not str(normalized).startswith("/etc"):
-            raise CustomizationError(f"whiteout escapes /etc: {path_str}")
-
     def _validate_path_type(self, path: Path) -> None:
         mode = path.lstat().st_mode
         if stat.S_ISREG(mode) or stat.S_ISDIR(mode) or stat.S_ISLNK(mode):
@@ -774,14 +758,57 @@ class CustomizationManager:
 
         systemd_root = etc_root / "systemd" / "system"
         if systemd_root.exists() and shutil.which("systemd-analyze"):
-            units = sorted(str(path) for path in systemd_root.rglob("*.service") if path.is_file())
+            units = sorted(
+                str(Path("/etc") / path.relative_to(etc_root))
+                for path in systemd_root.glob("*.service")
+                if path.is_file() or path.is_symlink()
+            )
             if units:
-                subprocess.run(
-                    ["systemd-analyze", "verify", *units],
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
+                self._verify_systemd_units(etc_root, units)
+
+    def _verify_systemd_units(self, etc_root: Path, units: list[str]) -> None:
+        # Loading a staged unit by filename does not redirect absolute paths
+        # such as ExecStart=/etc/bin/foo. Keep the host's executables and vendor
+        # units, but compose the prospective /etc without the active USER slot.
+        if not shutil.which("unshare"):
+            raise CustomizationError("systemd validation requires util-linux unshare and mount privileges")
+        sysroot_etc = Path(os.environ.get("ROOTFS_ETC_BIND", "/run/rootfs-etc"))
+        if not sysroot_etc.is_dir():
+            if os.path.ismount("/etc"):
+                raise CustomizationError(f"systemd validation requires original rootfs /etc at {sysroot_etc}")
+            # Development/manufacturing hosts before the /etc overlay is set up.
+            sysroot_etc = Path("/etc")
+
+        with tempfile.TemporaryDirectory(prefix="os-customization-verify-") as temporary:
+            workspace = Path(temporary)
+            validation_root = workspace / "root"
+            validation_root.mkdir()
+            layers = [
+                path.resolve() for path in (
+                    self.state_etc_path, etc_root, self.factory_path / "etc", sysroot_etc
+                ) if path.is_dir()
+            ]
+            # OverlayFS option separators must never be interpreted as part of
+            # a user-supplied layout path. Shell arguments are passed separately.
+            if any(any(char in str(path) for char in ",:\\\n") for path in layers):
+                raise CustomizationError("unsupported separator in systemd validation layer path")
+            command = [
+                "unshare", "--mount", "--propagation", "private", "/bin/sh", "-ec",
+                'mount --rbind / "$1"\n'
+                'mount -o remount,bind,ro "$1"\n'
+                'mount -t overlay overlay -o "$2" "$1/etc"\n'
+                'root=$1\nshift 2\n'
+                'exec systemd-analyze --root="$root" --generators=no --man=no verify "$@"',
+                "os-customization-verify", str(validation_root),
+                "ro,lowerdir=" + ":".join(map(str, layers))
+                + ",index=off,xino=off,redirect_dir=off,metacopy=off",
+                *units,
+            ]
+            # All mounts disappear with this child namespace, even on failure.
+            # The overlay is read-only and the parent's mounts are unchanged.
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode:
+                raise CustomizationError(f"systemd unit validation failed: {result.stderr.strip()}")
 
     def _run_one_health_check(self, index: int, check: dict) -> dict:
         check_type = check.get("type")
@@ -860,33 +887,6 @@ class CustomizationManager:
                 "stderr": "",
             }
         raise CustomizationError(f"unsupported health check type: {check_type}")
-
-    def _read_whiteouts(self, whiteouts_path: Path) -> list[str]:
-        if not whiteouts_path.exists():
-            return []
-        with whiteouts_path.open("r", encoding="utf-8") as handle:
-            entries = []
-            for line in handle:
-                stripped = line.strip()
-                if not stripped or stripped.startswith("#"):
-                    continue
-                entries.append(stripped)
-            return entries
-
-    def _materialize_whiteouts(self, etc_root: Path, whiteouts: Iterable[str]) -> None:
-        for entry in whiteouts:
-            relative = Path(entry).relative_to("/etc")
-            self._validate_relative_etc_path(relative)
-            marker = etc_root / relative.parent / f".wh.{relative.name}"
-            marker.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                os.mknod(marker, stat.S_IFCHR | 0o000, os.makedev(0, 0))
-            except PermissionError as exc:
-                raise CustomizationError(
-                    f"creating OverlayFS whiteout requires permission to create character devices: {marker}"
-                ) from exc
-            except OSError as exc:
-                raise CustomizationError(f"failed to create OverlayFS whiteout {marker}: {exc}") from exc
 
     def _copy_tree(self, source: Path, destination: Path) -> None:
         for item in source.iterdir():
