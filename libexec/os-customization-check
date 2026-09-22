@@ -63,7 +63,15 @@ def main() -> int:
                 reboot_if_requested()
                 return 1
 
-            result = manager.run_health_checks(slot_name=candidate_slot)
+            try:
+                result = manager.run_health_checks(slot_name=candidate_slot)
+            except CustomizationError as exc:
+                rollback(
+                    manager,
+                    f"candidate slot {candidate_slot} has invalid health checks: {exc}",
+                )
+                reboot_if_requested()
+                return 1
             if result["passed"]:
                 print(f"os-customization-check: candidate slot {candidate_slot} passed health checks", file=sys.stderr)
                 manager.commit()

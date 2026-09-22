@@ -18,6 +18,7 @@ etc/nftables.conf
 etc/snmp/snmpd.conf
 etc/ssh/authorized_keys/root
 etc/systemd/system/customer.service
+etc/systemd/system/multi-user.target.wants/customer.service  (symlink to ../customer.service)
 ```
 
 It must not contain application binaries or files outside `/etc`, such as
@@ -139,7 +140,9 @@ site-config-1.4.2/
     │       └── root
     └── systemd/
         └── system/
-            └── customer-example.service
+            ├── customer-example.service
+            └── multi-user.target.wants/
+                └── customer-example.service -> /etc/systemd/system/customer-example.service
 ```
 
 ### `manifest.json`
@@ -238,9 +241,40 @@ remain beneath `/etc`; traversal components and symlinks that resolve outside
 that namespace are rejected.
 
 Systemd unit files and enabling symlinks can be supplied below
-`etc/systemd/system/`. Be careful: a unit that invokes arbitrary commands can
-effectively become a software-deployment mechanism. Use units only for
-configuration of trusted Core OS programs.
+`etc/systemd/system/`. Installing a unit file alone makes the unit available to
+systemd, but does not enable or automatically start it. To start a service as
+part of normal boot, the customization-set must also contain an enabling
+symlink in the appropriate target's `.wants/` directory.
+
+For a service wanted by `multi-user.target`, the payload must contain both:
+
+```text
+etc/systemd/system/customer-example.service
+etc/systemd/system/multi-user.target.wants/customer-example.service
+    -> /etc/systemd/system/customer-example.service
+```
+
+For example, while preparing a customization-set in
+`/data/my-customization`:
+
+```sh
+mkdir -p /data/my-customization/etc/systemd/system/multi-user.target.wants
+ln -s /etc/systemd/system/customer-example.service \
+  /data/my-customization/etc/systemd/system/multi-user.target.wants/customer-example.service
+```
+
+The symlink is part of the customization payload; do not run `systemctl enable`
+on the target after activation, because that would attempt to modify the live
+`/etc` STATE layer. Choose the target appropriate for the service. The common
+choice for a regular system service is `multi-user.target.wants`.
+
+Enabling a unit only schedules it to start with the target. It will be active
+only if startup succeeds. A `systemd_unit_active` health check can verify that
+result after reboot.
+
+Be careful: a unit that invokes arbitrary commands can effectively become a
+software-deployment mechanism. Use units only for configuration of trusted
+Core OS programs.
 
 ### Inherited paths
 

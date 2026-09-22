@@ -449,6 +449,8 @@ class CustomizationManager:
         if "version" not in manifest:
             raise CustomizationError("manifest must contain version")
 
+        self._validate_health_checks(manifest.get("health_checks", []))
+
         compatible_core_os = manifest.get("compatible_core_os")
         if compatible_core_os is not None:
             current_core_os = current_core_os or self.current_core_os_version()
@@ -664,11 +666,43 @@ class CustomizationManager:
 
         manifest = self.get_effective_manifest(slot_name)
         checks = manifest.get("health_checks", [])
+        self._validate_health_checks(checks)
         results = []
         for index, check in enumerate(checks, start=1):
             results.append(self._run_one_health_check(index, check))
         passed = all(item["passed"] for item in results)
         return {"slot": slot_name, "checks": results, "passed": passed}
+
+    def _validate_health_checks(self, checks: object) -> None:
+        if not isinstance(checks, list):
+            raise CustomizationError("health_checks must be a list")
+
+        for index, check in enumerate(checks, start=1):
+            if not isinstance(check, dict):
+                raise CustomizationError(f"health check #{index} must be an object")
+
+            check_type = check.get("type")
+            if check_type == "command":
+                command = check.get("command")
+                if (
+                    not isinstance(command, list)
+                    or not command
+                    or not all(isinstance(argument, str) for argument in command)
+                    or not command[0]
+                ):
+                    raise CustomizationError(
+                        f"health check #{index} must provide a non-empty command list"
+                    )
+            elif check_type == "systemd_unit_active":
+                unit = check.get("unit")
+                if not isinstance(unit, str) or not unit:
+                    raise CustomizationError(f"health check #{index} must provide a unit")
+            elif check_type == "path_exists":
+                path = check.get("path")
+                if not isinstance(path, str) or not path:
+                    raise CustomizationError(f"health check #{index} must provide a path")
+            else:
+                raise CustomizationError(f"unsupported health check type: {check_type}")
 
     def rollback(self, reason: Optional[str] = None) -> dict:
         status = self.read_status()
